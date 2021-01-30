@@ -34,6 +34,7 @@ You'll need 3 things:
 * Riot TFT files
 * a Riot API key
 * a Discord Bot key. 
+
 (Make sure that the last 2 remain private, don't share them with anyone else!)
 
 Riot TFT files & API key: navigate to https://developer.riotgames.com/ and login. To get the TFT files, use the top Docs bar and navigate to Teamfight Tactics section. Scroll down to Static Data and download the files under Current Set. Place these extracted json files (champions, items, and traits) in the same folder as your bot .py file. Now you will get an API key. Click APIS on the top bar, and run any API request (I recommend running LOL-STATUS-V3 because you won't need to input any extra info). After the command is run, copy the entire Request Headers surrounded by curly braces. Paste this over {'HEADER_GOES_HERE'} in line 10 of the main file.
