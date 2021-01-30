@@ -30,9 +30,13 @@ Returns the TFT rank for the specified summoner.
 
 
 ## How to set up your own bot
-You'll need 2 things - a Riot API key and Discord Bot key. Make sure that these keys remain private, don't share them with anyone else!
+You'll need 3 things:
+* Riot TFT files
+* a Riot API key
+* a Discord Bot key. 
+(Make sure that the last 2 remain private, don't share them with anyone else!)
 
-Riot API key: navigate to https://developer.riotgames.com/ and login. Click APIS on the top bar, and run any API request (I recommend running LOL-STATUS-V3 because you won't need to input any extra info). After the command is run, copy the entire Request Headers surrounded by curly braces. Paste this over {'HEADER_GOES_HERE'} in line 10 of the main file.
+Riot TFT files & API key: navigate to https://developer.riotgames.com/ and login. To get the TFT files, use the top Docs bar and navigate to Teamfight Tactics section. Scroll down to Static Data and download the files under Current Set. Place these extracted json files (champions, items, and traits) in the same folder as your bot .py file. Now you will get an API key. Click APIS on the top bar, and run any API request (I recommend running LOL-STATUS-V3 because you won't need to input any extra info). After the command is run, copy the entire Request Headers surrounded by curly braces. Paste this over {'HEADER_GOES_HERE'} in line 10 of the main file.
 
 Discord Bot token: Obtained on discord developer portal, login and navigate to Applications on the left sidebar. At the top, click New Application, then navigate to Bot on the left sidebar. Click Add Bot, then copy its Token. Paste this token (in single quotes) in parenthesis to replace 'DISCORD_KEY' on line 1024 of the main file.
 
