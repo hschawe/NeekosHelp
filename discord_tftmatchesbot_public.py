@@ -1,4 +1,4 @@
-#discord_tftmatchesbot_0.4.0.py
+#discord_tftmatchesbot_public.py
 import os
 import requests
 import time
@@ -6,297 +6,38 @@ import json
 import discord
 from discord.ext import commands
 import dbl
+import create_set_decoders
+import neekokeys
 
 # Header for a Riot API request.
 global headers
-headers = {'HEADER_GOES_HERE'}
+headers = neekokeys.test_headers
+
+# Discord bot key
+discord_bot_key = neekokeys.test_discord_bot_key
 
 
-################################################################################
+# Create TFT info decoders (dictionaries)
 '''  Relevant information about the past and current TFT sets.
     (set 3 and onward.)
 
-    Creates dictionaries to API-retrieved data to readable data (item names,
+    Create dictionaries to convert API-retrieved data to readable data (item names,
     synergy names, etc.).
 '''
 
 global queue_type_decoder
 global item_decoder
-global galaxy_decoder
 global synergy_decoder
 global name_decoder
 global chosen_decoder
 global region_decoder
 
-# I made the set 3 decoders manually so I'm re-using them here instead of
-# running create_decoders_from_file.py on the set 3 data
-queue_type_decoder = {1090:"Normal",
-                      1100:"Ranked",
-                      1110:"TFT Tutorial"
-                      }
-
-item_decoder = {1:"B.F. Sword", 2:"Recurve Bow", 3:"Needlessly Large Rod", 4:"Tear of the Goddess",
-                5:"Chain Vest", 6:"Negatron Cloak", 7:"Giant's Belt", 8:"Spatula",
-                9:"Sparring Gloves", 11:"Deathblade", 12:"Giant Slayer", 13:"Hextech Gunblade",
-                14:"Spear of Shojin", 15:"Guardian Angel", 16:"Bloodthirster", 17:"Zeke's Herald",
-                18:"Blade of the Ruined King", 19:"Infinity Edge", 22:"Rapid Firecannon",
-                23:"Guinsoo's Rageblade", 24:"Statikk Shiv", 25:"Titan's Resolve", 26:"Runaan's Hurricane",
-                27:"Zz'Rot Portal", 28:"Infiltrator's Talons", 29:"Last Whisper", 33:"Rabadon's Deathcap",
-                34:"Luden's Echo", 35:"Locket of the Iron Solari", 36:"Ionic Spark", 37:"Morellonomicon",
-                38:"Battlecast Armor", 39:"Jeweled Gauntlet", 44:"Blue Buff",
-                45:"Frozen Heart", 46:"Chalice of Power", 47:"Redemption", 48:"Star Guardian's Charm",
-                49:"Hand of Justice", 55:"Bramble Vest", 56:"Sword Breaker", 57:"Red Buff",
-                58:"Rebel Medal", 59:"Shroud of Stillness", 66:"Dragon's Claw", 67:"Zephyr",
-                68:"Celestial Orb", 69:"Quicksilver", 77:"Warmog's Armor", 78:"Protector's Chestguard",
-                79:"Trap Claw", 88:"Force of Nature", 89:"Dark Star's Heart", 99:"Thief's Gloves"
-                }
-
-galaxy_decoder = {"TFT3_GameVariation_None":"Normal Galaxy",
-                  "TFT3_GameVariation_BigLittleLegends":"Medium Legends",
-                  "TFT3_GameVariation_FourCostFirstCarousel":"Lilac Nebula",
-                  "TFT3_GameVariation_FreeNeekos":"The Neekoverse",
-                  "TFT3_GameVariation_FreeRerolls":"Trade Sector",
-                  "TFT3_GameVariation_MidGameFoN":"Superdense Galaxy",
-                  "TFT3_GameVariation_TwoStarCarousels":"Star Cluster",
-                  "TFT3_GameVariation_Bonanza":"Treasure Trove",
-                  "TFT3_GameVariation_LittlerLegends":"Little Little Legends",
-                  "TFT3_GameVariation_StartingItems":"Galactic Armory",
-                  "TFT3_GameVariation_SmallerBoards":"Dwarf Planet",
-                  "TFT3_GameVariation_TwoItemMax":"Binary Star",
-                  }
-
-synergy_decoder = {'Astro 1': 'Astro',
-                   'Battlecast 1': '2 Battlecast',
-                   'Battlecast 2': '4 Battlecast',
-                   'Battlecast 3': '6 Battlecast',
-                   'Battlecast 4': '9 Battlecast',
-                   'Set3_Blademaster 1': '3 Blademaster',
-                   'Set3_Blademaster 2': '6 Blademaster',
-                   'Set3_Blademaster 3': '9 Blademaster',
-                   'Blaster 1': '2 Blaster',
-                   'Blaster 2': '4 Blaster',
-                   'Set3_Brawler 1': '2 Brawler',
-                   'Set3_Brawler 2': '4 Brawler',
-                   'Set3_Celestial 1': '2 Celestial',
-                   'Set3_Celestial 2': '4 Celestial',
-                   'Set3_Celestial 3': '6 Celestial',
-                   'Chrono 1': '2 Chrono',
-                   'Chrono 2': '4 Chrono',
-                   'Chrono 3': '6 Chrono',
-                   'Cybernetic 1': '3 Cybernetic',
-                   'Cybernetic 2': '6 Cybernetic',
-                   'DarkStar 1': '2 Dark Star',
-                   'DarkStar 2': '4 Dark Star',
-                   'DarkStar 3': '6 Dark Star',
-                   'DarkStar 4': '8 Dark Star',
-                   'Demolitionist 1': 'Demolitionist',
-                   'Infiltrator 1': '2 Infiltrator',
-                   'Infiltrator 2': '4 Infiltrator',
-                   'Infiltrator 3': '6 Infiltrator',
-                   'ManaReaver 1': 'Mana-Reaver',
-                   'MechPilot 1': 'Mech-Pilot',
-                   'Mercenary 1': 'Mercenary',
-                   'Mercenary 2': 'Mercenary',
-                   'Set3_Mystic 1': '2 Mystic',
-                   'Set3_Mystic 2': '4 Mystic',
-                   'Paragon 1': 'Paragon',
-                   'Protector 1': '2 Protector',
-                   'Protector 2': '4 Protector',
-                   'Protector 3': '6 Protector',
-                   'Rebel 1': '3 Rebel',
-                   'Rebel 2': '6 Rebel',
-                   'Rebel 3': '9 Rebel',
-                   'Sniper 1': '2 Sniper',
-                   'Sniper 2': '4 Sniper',
-                   'Set3_Sorcerer 1': '3 Sorcerer',
-                   'Set3_Sorcerer 2': '4 Sorcerer',
-                   'Set3_Sorcerer 3': '6 Sorcerer',
-                   'Set3_Sorcerer 4': '8 Sorcerer',
-                   'SpacePirate 1': '2 Space Pirate',
-                   'SpacePirate 2': '4 Space Pirate',
-                   'StarGuardian 1': '3 Star Guardian',
-                   'StarGuardian 2': '6 Star Guardian',
-                   'Starship 1': 'Starship',
-                   'Valkyrie 1': 'Valkyrie',
-                   'Vanguard 1': '2 Vanguard',
-                   'Vanguard 2': '4 Vanguard',
-                   'Set3_Void 1': 'Void',
-                   'Set4_Adept 1': '2 Adept',
-                   'Set4_Adept 2': '3 Adept',
-                   'Set4_Adept 3': '4 Adept',
-                   'Set4_Assassin 1': '2 Assassin',
-                   'Set4_Assassin 2': '4 Assassin',
-                   'Set4_Assassin 3': '6 Assassin',
-                   'Set4_Brawler 1': '2 Brawler',
-                   'Set4_Brawler 2': '4 Brawler',
-                   'Set4_Brawler 3': '6 Brawler',
-                   'Set4_Brawler 4': '8 Brawler',
-                   'Cultist 1': '3 Cultist',
-                   'Cultist 2': '6 Cultist',
-                   'Cultist 3': '9 Cultist',
-                   'Set4_Dazzler 1': '2 Dazzler',
-                   'Set4_Dazzler 2': '4 Dazzler',
-                   'Divine 1': '2 Divine',
-                   'Divine 2': '4 Divine',
-                   'Divine 3': '6 Divine',
-                   'Divine 4': '8 Divine',
-                   'Duelist 1': '2 Duelist',
-                   'Duelist 2': '4 Duelist',
-                   'Duelist 3': '6 Duelist',
-                   'Duelist 4': '8 Duelist',
-                   'Dusk 1': '2 Dusk',
-                   'Dusk 2': '4 Dusk',
-                   'Dusk 3': '6 Dusk',
-                   'Set4_Elderwood 1': '3 Elderwood',
-                   'Set4_Elderwood 2': '6 Elderwood',
-                   'Set4_Elderwood 3': '9 Elderwood',
-                   'Emperor 1': '1 Emperor',
-                   'Set4_Enlightened 1': '2 Enlightened',
-                   'Set4_Enlightened 2': '4 Enlightened',
-                   'Set4_Enlightened 3': '6 Enlightened',
-                   'Set4_Exile 1': '1 Exile',
-                   'Set4_Exile 2': '2 Exile',
-                   'Fortune 1': '3 Fortune',
-                   'Fortune 2': '6 Fortune',
-                   'Hunter 1': '2 Hunter',
-                   'Hunter 2': '3 Hunter',
-                   'Hunter 3': '4 Hunter',
-                   'Hunter 4': '5 Hunter',
-                   'Keeper 1': '2 Keeper',
-                   'Keeper 2': '4 Keeper',
-                   'Keeper 3': '6 Keeper',
-                   'Set4_Mage 1': '3 Mage',
-                   'Set4_Mage 2': '6 Mage',
-                   'Set4_Mage 3': '9 Mage',
-                   'Moonlight 1': '3 Moonlight',
-                   'Set4_Mystic 1': '2 Mystic',
-                   'Set4_Mystic 2': '4 Mystic',
-                   'Set4_Mystic 3': '6 Mystic',
-                   'Set4_Ninja 1': '1 Ninja',
-                   'Set4_Ninja 2': '4 Ninja',
-                   'Set4_Shade 1': '2 Shade',
-                   'Set4_Shade 2': '3 Shade',
-                   'Set4_Shade 3': '4 Shade',
-                   'Sharpshooter 1': '2 Sharpshooter',
-                   'Sharpshooter 2': '4 Sharpshooter',
-                   'Sharpshooter 3': '6 Sharpshooter',
-                   'Set4_Spirit 1': '2 Spirit',
-                   'Set4_Spirit 2': '4 Spirit',
-                   'Boss 1': '1 The Boss',
-                   'Set4_Tormented 1': '1 Tormented',
-                   'Set4_Vanguard 1': '2 Vanguard',
-                   'Set4_Vanguard 2': '4 Vanguard',
-                   'Set4_Vanguard 3': '6 Vanguard',
-                   'Warlord 1': '3 Warlord',
-                   'Warlord 2': '6 Warlord',
-                   'Warlord 3': '9 Warlord'}
-
-name_decoder = {'TFT3_Ahri': 'Ahri', 'TFT3_Annie': 'Annie', 'TFT3_Ashe': 'Ashe',
-                'TFT3_AurelionSol': 'Aurelion Sol', 'TFT3_Bard': 'Bard',
-                'TFT3_Blitzcrank': 'Blitzcrank', 'TFT3_Cassiopeia': 'Cassiopeia',
-                'TFT3_Caitlyn': 'Caitlyn', 'TFT3_ChoGath': "Cho'Gath",
-                'TFT3_Darius': 'Darius', 'TFT3_Ekko': 'Ekko',
-                'TFT3_Ezreal': 'Ezreal', 'TFT3_Fiora': 'Fiora',
-                'TFT3_Fizz': 'Fizz', 'TFT3_Gangplank': 'Gangplank',
-                'TFT3_Graves': 'Graves', 'TFT3_Gnar': 'Gnar',
-                'TFT3_Illaoi': 'Illaoi', 'TFT3_Irelia': 'Irelia',
-                'TFT3_Janna': 'Janna', 'TFT3_JarvanIV': 'Jarvan IV',
-                'TFT3_Jayce': 'Jayce', 'TFT3_Jhin': 'Jhin', 'TFT3_Jinx': 'Jinx',
-                'TFT3_KaiSa': "Kai'Sa", 'TFT3_Karma': 'Karma',
-                'TFT3_KogMaw': "Kog'Maw", 'TFT3_Kassadin': 'Kassadin',
-                'TFT3_Kayle': 'Kayle', 'TFT3_KhaZix': "Kha'Zix",
-                'TFT3_Leona': 'Leona', 'TFT3_Lucian': 'Lucian',
-                'TFT3_Lulu': 'Lulu', 'TFT3_Lux': 'Lux',
-                'TFT3_Malphite': 'Malphite', 'TFT3_MasterYi': 'Master Yi',
-                'TFT3_MissFortune': 'Miss Fortune',
-                'TFT3_Mordekaiser': 'Mordekaiser', 'TFT3_Nautilus': 'Nautilus',
-                'TFT3_Neeko': 'Neeko', 'TFT3_Nocturne': 'Nocturne',
-                'TFT3_Poppy': 'Poppy', 'TFT3_Rakan': 'Rakan',
-                'TFT3_Riven': 'Riven', 'TFT3_Rumble': 'Rumble',
-                'TFT3_Shaco': 'Shaco', 'TFT3_Shen': 'Shen', 'TFT3_Sona': 'Sona',
-                'TFT3_Soraka': 'Soraka', 'TFT3_Syndra': 'Syndra',
-                'TFT3_Teemo': 'Teemo', 'TFT3_Thresh': 'Thresh',
-                'TFT3_TwistedFate': 'Twisted Fate', 'TFT3_Urgot': 'Urgot',
-                'TFT3_Vayne': 'Vayne', 'TFT3_VelKoz': "Vel'Koz",
-                'TFT3_Vi': 'Vi', 'TFT3_Viktor': 'Viktor',
-                'TFT3_WuKong': 'Wukong', 'TFT3_Xayah': 'Xayah',
-                'TFT3_Xerath': 'Xerath', 'TFT3_XinZhao': 'Xin Zhao',
-                'TFT3_Yasuo': 'Yasuo', 'TFT3_Zed': 'Zed', 'TFT3_Ziggs': 'Ziggs',
-                'TFT3_Zoe': 'Zoe', 'TFT4_Aatrox': 'Aatrox',
-                'TFT4_Ahri': 'Ahri', 'TFT4_Akali': 'Akali',
-                'TFT4_Annie': 'Annie', 'TFT4_Aphelios': 'Aphelios',
-                'TFT4_Ashe': 'Ashe', 'TFT4_Azir': 'Azir',
-                'TFT4_Cassiopeia': 'Cassiopeia', 'TFT4_Diana': 'Diana',
-                'TFT4_Elise': 'Elise', 'TFT4_Evelynn': 'Evelynn',
-                'TFT4_Ezreal': 'Ezreal', 'TFT4_Fiora': 'Fiora',
-                'TFT4_Garen': 'Garen', 'TFT4_Hecarim': 'Hecarim',
-                'TFT4_Irelia': 'Irelia', 'TFT4_Janna': 'Janna',
-                'TFT4_JarvanIV': 'Jarvan IV', 'TFT4_Jax': 'Jax',
-                'TFT4_Jhin': 'Jhin', 'TFT4_Jinx': 'Jinx',
-                'TFT4_Kalista': 'Kalista', 'TFT4_Katarina': 'Katarina',
-                'TFT4_Kayn': 'Kayn', 'TFT4_Kennen': 'Kennen',
-                'TFT4_Kindred': 'Kindred', 'TFT4_LeeSin': 'Lee Sin',
-                'TFT4_Lillia': 'Lillia', 'TFT4_Lissandra': 'Lissandra',
-                'TFT4_Lulu': 'Lulu', 'TFT4_Lux': 'Lux', 'TFT4_Maokai': 'Maokai',
-                'TFT4_Morgana': 'Morgana', 'TFT4_Nami': 'Nami',
-                'TFT4_Nidalee': 'Nidalee', 'TFT4_Nunu': 'Nunu & Willump',
-                'TFT4_Pyke': 'Pyke', 'TFT4_Riven': 'Riven',
-                'TFT4_Sejuani': 'Sejuani', 'TFT4_Sett': 'Sett',
-                'TFT4_Shen': 'Shen', 'TFT4_Sylas': 'Sylas',
-                'TFT4_TahmKench': 'Tahm Kench', 'TFT4_Talon': 'Talon',
-                'TFT4_Teemo': 'Teemo', 'TFT4_Thresh': 'Thresh',
-                'TFT4_TwistedFate': 'Twisted Fate', 'TFT4_Vayne': 'Vayne',
-                'TFT4_Veigar': 'Veigar', 'TFT4_Vi': 'Vi',
-                'TFT4_Warwick': 'Warwick', 'TFT4_Wukong': 'Wukong',
-                'TFT4_XinZhao': 'Xin Zhao', 'TFT4_Yasuo': 'Yasuo',
-                'TFT4_Yone': 'Yone', 'TFT4_Yuumi': 'Yuumi',
-                'TFT4_Zed': 'Zed', 'TFT4_Zilean': 'Zilean'}
-
 region_decoder = {"BR":"br1", "EUNE":"eun1", "EUW":"euw1", "JP":"jp1", "KR":"kr",
                   "LAN":"la1", "LAS":"la2", "NA":"na1", "OCE":"oc1", "TR":"tr1", "RU":"ru"}
 
-def create_item_decoder():
-    with open("items.json") as items_file:
-        items = json.load(items_file)    # List of dictionaries
-        for item in items:
-            item_decoder[item["id"]] = item["name"]
-    return item_decoder
-
-def create_synergy_decoder():
-    with open("traits.json") as synergies_file:
-        synergies = json.load(synergies_file)    # List of dictionaries
-        for synergy in synergies:
-            synergy_key = synergy["key"]
-            synergy_name = synergy["name"]
-            synergy_by_tier = synergy["sets"]
-            for i in range(len(synergy_by_tier)):
-                this_tier = synergy_by_tier[i]
-                api_synergy_data = synergy_key + " " + str(i + 1)
-                synergy_decoder[api_synergy_data] = str(this_tier["min"]) \
-                                                    + " " + synergy_name
-    return synergy_decoder  
-
-def create_name_decoder():
-    with open("champions.json") as names_file:
-        names = json.load(names_file)    # List of dictionaries
-        for name in names:
-            name_decoder[name["championId"]] = name["name"]
-    return name_decoder
-
-def create_chosen_decoder():
-    # Chosen is slightly different from synergy decider as it has no number
-    chosen_decoder = {}
-    with open("traits.json") as synergies_file:
-        synergies = json.load(synergies_file)
-        for synergy in synergies:
-            chosen_decoder[synergy["key"]] = synergy["name"]
-    return chosen_decoder
-
-
-item_decoder = create_item_decoder()
-name_decoder = create_name_decoder()
-synergy_decoder = create_synergy_decoder()
-chosen_decoder = create_chosen_decoder()
+# Create dicts
+rootdir = "../set-info"
+queue_type_decoder, name_decoder, synergy_decoder, item_decoder = create_set_decoders.main(rootdir)
 
 
 ################################################################################
@@ -320,7 +61,7 @@ class TopGG(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # Set this to your DBL token
-        self.token = 'DBL_TOKEN'
+        self.token = neekokeys.topgg_token
         # Autopost will post your guild count every 30 minutes
         self.dblpy = dbl.DBLClient(self.bot, self.token, autopost=True)
 
@@ -329,7 +70,8 @@ class TopGG(commands.Cog):
         print("Server count posted successfully")
 
 def setup(bot):
-    bot.add_cog(TopGG(client))
+    if hasattr(neekokeys, 'topgg_token'):
+        bot.add_cog(TopGG(client))
 
 setup(client)
 
@@ -401,6 +143,7 @@ async def regions(ctx):
 @client.command()
 @commands.check(check_if_bot)
 async def recentmatch(ctx, region_code, *, summoner = None):
+    print("RECENTMATCH / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
     await ctx.channel.trigger_typing()
 
     # Get region routing value
@@ -458,6 +201,7 @@ Use //regions to see list of correct region codes."
 @client.command()
 @commands.check(check_if_bot)
 async def matchhistory(ctx, region_code, *, summoner = None):
+    print("MATCHHISTORY / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
     user = ctx.author
     ment = user.mention    
 
@@ -532,7 +276,6 @@ Use //regions to see list of correct region codes."
             
             matchinfo = cache_matchdata[j]
             placement = matchinfo.get("placement")
-            galaxy = matchinfo.get("galaxy")
             level = matchinfo.get("level")
             synergies_msg = matchinfo.get("synergies")
             units_msg = matchinfo.get("units")
@@ -556,9 +299,7 @@ Use //regions to see list of correct region codes."
                              icon_url = ctx.author.avatar_url)
             game_info = "Game type: " + queue + "\n " \
                         + "Placement: " + str(placement) + "\n " \
-                        + "Level: " + str(level)
-            if galaxy != None:
-                game_info = game_info + "\n " + "Galaxy: " + galaxy    
+                        + "Level: " + str(level)   
             embed_msg.add_field(name = "Game Info", value = game_info, inline = False)
             if synergies_msg != "":
                 embed_msg.add_field(name = "Synergies", value = synergies_msg, inline = False)
@@ -573,6 +314,7 @@ Use //regions to see list of correct region codes."
 @client.command()
 @commands.check(check_if_bot)
 async def tftrank(ctx, region_code, *, summoner = None):
+    print("TFTRANK / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
     # get region routing value
     try:
         region_route = region_decoder[region_code.upper()]
@@ -664,7 +406,6 @@ async def updatemessage(ctx, *, msg):
 # Output: That summoner's puuid (an identifier Riot uses for players.)
 def get_player_puuid(summoner_name, region_route):    
     # requesting summoner's info
-    print("Requested by summoner:", summoner_name)
     summonerName = summoner_name.replace(' ','%20')
     APIlink = 'https://{}.api.riotgames.com/tft/summoner/v1/summoners/by-name/{}'.format(region_route, summonerName)
     summoner_data = requests.get(APIlink, headers = headers)
@@ -735,12 +476,6 @@ def get_tft_match(matchID, puuid, summoner, region_route):
     match_data = match_data.json()
     match_data = match_data.get("info")
     match_participants = match_data.get("participants")
-
-
-    # save the galaxy data - if the game was not played in set 3,
-    # galaxy will be None
-    galaxy = match_data.get("game_variation")
-    galaxy = galaxy_decoder.get(galaxy)
 
     #save the queue type (normal, ranked) data
     queue = match_data.get("queue_id")
@@ -836,8 +571,7 @@ def get_tft_match(matchID, puuid, summoner, region_route):
     game_info = "Game type: " + queue + "\n " \
                         + "Placement: " + str(placement) + "\n " \
                         + "Level: " + str(level)
-    if galaxy != None:
-        game_info = game_info + "\n " + "Galaxy: " + galaxy
+
     embed_msg.add_field(name = "Game Info", value = game_info, inline = False)
     embed_msg.add_field(name = "Synergies", value = synergies_msg, inline = False)
     embed_msg.add_field(name = "Units", value = units_msg, inline = False)
@@ -922,10 +656,6 @@ def get_matches_data(summoner, puuid, match_IDs, region_route):
         # save the queue type (normal, ranked) data
         queue = match_data.get("queue_id")
         queue = queue_type_decoder.get(queue)
-        
-        # save the galaxy data
-        galaxy = match_data.get("game_variation")
-        galaxy = galaxy_decoder.get(galaxy)
 
         # go to the player specified
         for participant in match_participants:           
@@ -1002,8 +732,7 @@ def get_matches_data(summoner, puuid, match_IDs, region_route):
                           + queue + '\nSynergies: ' + synergies_msg + '\n'
 
                 # dictionary containing the match's info
-                matchinfo = {"galaxy":galaxy,
-                         "placement":placement,
+                matchinfo = {"placement":placement,
                          "level":level,
                          "synergies":synergies_msg,
                          "units":units_msg,
@@ -1021,4 +750,4 @@ def get_matches_data(summoner, puuid, match_IDs, region_route):
 
 ################################################################################
 # Run discord bot w/ the discord key
-client.run('DISCORD_KEY')
+client.run(discord_bot_key)
