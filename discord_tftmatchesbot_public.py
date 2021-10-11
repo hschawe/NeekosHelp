@@ -393,8 +393,6 @@ async def updatemessage(ctx, *, msg):
         # Listening to {msg}
         print("Changing status to", msg)
         activity = discord.Activity(name = msg, type=discord.ActivityType.listening)
-    else:
-        activity = discord.Activity(name='//help', type=discord.ActivityType.listening)
     await client.change_presence(activity = activity)
 
     
