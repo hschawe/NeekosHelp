@@ -1,7 +1,7 @@
 # Once headers/keys are added, rename this file to neekokeys.py 
 
 # Riot Developer headers
-test_headers = {}
+headers = {}
 
 # Discord bot key
-test_discord_bot_key = ''
+discord_bot_key = ''

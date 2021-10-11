@@ -11,10 +11,10 @@ import neekokeys
 
 # Header for a Riot API request.
 global headers
-headers = neekokeys.test_headers
+headers = neekokeys.headers
 
 # Discord bot key
-discord_bot_key = neekokeys.test_discord_bot_key
+discord_bot_key = neekokeys.discord_bot_key
 
 
 # Create TFT info decoders (dictionaries)
