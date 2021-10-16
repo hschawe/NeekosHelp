@@ -379,8 +379,7 @@ Use //regions to see list of correct region codes."
 async def myuserid(ctx):
     #get your discord user ID
     disc_userid = ctx.author.id
-    user = client.get_user(disc_userid)
-    ment = user.mention
+    ment = ctx.author.mention
     await ctx.channel.send(f"Your ID is {disc_userid}, {ment}!")
 
 @client.command()
