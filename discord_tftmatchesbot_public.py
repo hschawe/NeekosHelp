@@ -541,15 +541,17 @@ def get_tft_match(matchID, puuid, summoner, region_route):
                     try:
                         unit_msg = unit_name + " - " + unit_tier
                     except:
+                        print("Error -> Line543:", summoner, unit_name, unit_tier)
                         unit_msg = "(error with unit.)"
                 else:
                     # create unit_msg with items
                     try:
                         unit_msg = unit_name + " - " + unit_tier + " - "
                         for i in unit_item_ids:
-                            item_name = item_decoder.get(i)
+                            item_name = item_decoder.get(i, "")
                             unit_msg = unit_msg + " " + item_name + ","
                     except:
+                        print("Error -> Line553:", summoner, unit_name, unit_tier, unit_item_ids)
                         unit_msg = "(error with unit.)"
                         
                 #append unit_txt to units_msg
@@ -709,15 +711,17 @@ def get_matches_data(summoner, puuid, match_IDs, region_route):
                             unit_txt = unit_name + ' - ' + unit_tier
                         except:
                             unit_txt = "(Error with unit.)"
+                            print("Error -> Line712", summoner, unit_name, unit_tier)
                     else:
                         # Create unit_txt with items
                         try:
                             unit_txt = unit_name + ' - ' + unit_tier + ' - '
                             for i in unit_item_ids:
-                                item_name = item_decoder.get(i)
+                                item_name = item_decoder.get(i, "")
                                 unit_txt = unit_txt + ' ' + item_name + ','
                         except:
                             unit_txt = "(Error with unit.)"
+                            print("Error -> Line722", summoner, unit_name, unit_tier, unit_item_ids)
                     
                     #append unit_txt to UNITS_TXT
                     unit_txt = unit_txt.rstrip(',')
