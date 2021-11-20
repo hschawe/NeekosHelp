@@ -39,6 +39,7 @@ region_decoder = {"BR":"br1", "EUNE":"eun1", "EUW":"euw1", "JP":"jp1", "KR":"kr"
 rootdir = "../set-info"
 queue_type_decoder, name_decoder, synergy_decoder, item_decoder = create_set_decoders.main(rootdir)
 
+queue_type_decoder[1150] = "Double Up"
 
 ################################################################################
 '''Running the Discord bot. '''
