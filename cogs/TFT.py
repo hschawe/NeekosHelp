@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import requests
+import asyncio
 import json
 from NeekosHelp.helpers import checks
 from NeekosHelp.helpers import create_set_decoders
@@ -86,8 +87,20 @@ class TFT(commands.Cog):
         if ctx.author.avatar is not None:
             embed_msg.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
-        # Send the matchhistory message
-        await ctx.channel.send(embed=embed_msg)
+        # Send the message and add the numbered emojis as reactions
+        history_msg = await ctx.channel.send(embed=embed_msg)
+        if match_data_cache is not None:
+            await history_msg.add_reaction('1️⃣')
+            await history_msg.add_reaction('2️⃣')
+            await history_msg.add_reaction('3️⃣')
+            await history_msg.add_reaction('4️⃣')
+            await history_msg.add_reaction('5️⃣')
+            await history_msg.add_reaction('6️⃣')
+            await history_msg.add_reaction('7️⃣')
+            await history_msg.add_reaction('8️⃣')
+            await history_msg.add_reaction('9️⃣')
+
+        await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
 
     @commands.command()
     @commands.check(checks.check_if_bot)
@@ -410,6 +423,56 @@ class TFT(commands.Cog):
                  }
 
         return msg, cache
+
+    async def wait_for_interaction(self, ctx, history_msg, match_data_cache, summoner, reactions_list=['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']):
+        def check_msg(reaction, user):
+            return reaction.message.id == history_msg.id and user == ctx.author
+
+        try:
+            # Wait for reactions for 2 mins, check that the reaction is on the right message
+            reaction, user = await self.bot.wait_for('reaction_add', check=check_msg, timeout=60)
+        except asyncio.TimeoutError:
+            print("TIMEOUT")
+            pass
+        else:
+            if str(reaction.emoji) in reactions_list:
+                j = reactions_list.index(str(reaction.emoji))
+
+                match_info = match_data_cache[j]
+                placement = match_info.get("placement")
+                level = match_info.get("level")
+                synergies_msg = match_info.get("synergies")
+                units_msg = match_info.get("units")
+                queue = match_info.get("queue")
+
+                if j in [3, 4, 5, 6, 7, 8]:
+                    numb = str(j + 1) + 'th'
+                elif j == 0:
+                    numb = '1st'
+                elif j == 1:
+                    numb = '2nd'
+                elif j == 2:
+                    numb = '3rd'
+
+                embed_msg = discord.Embed(
+                    title="{} most recent match for {}".format(numb, summoner),
+                    color=discord.Colour.blue()
+                )
+                if ctx.author.avatar is not None:
+                    embed_msg.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+                game_info = "Game type: " + str(queue) + "\n " + "Placement: " + str(placement) + "\n " + \
+                            "Level: " + str(level)
+                embed_msg.add_field(name="Game Info", value=game_info, inline=False)
+                if synergies_msg != "":
+                    embed_msg.add_field(name="Synergies", value=synergies_msg, inline=False)
+                if units_msg != "":
+                    embed_msg.add_field(name="Units", value=units_msg, inline=False)
+                await ctx.channel.send(embed=embed_msg)
+
+                # Run again so we can handle multiple reactions
+                # Remove this reaction from the list, so we don't return this match again
+                reactions_list[j] = None
+            await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner, reactions_list)
 
 
 def setup(bot):
