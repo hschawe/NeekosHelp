@@ -3,7 +3,7 @@ import os
 
 
 def create_set_decoders(rootdir):
-    queue_type_decoder = {1090: "Normal", 1100: "Ranked", 1110: "TFT Tutorial", 1111: "Hyper Roll", 1150: "Double Up"}
+    queue_type_decoder = {1090: "Normal", 1100: "Ranked", 1110: "TFT Tutorial", 1130: "Hyper Roll", 1150: "Double Up"}
     region_decoder = {"BR": "br1", "EUNE": "eun1", "EUW": "euw1", "JP": "jp1", "KR": "kr",
                       "LAN": "la1", "LAS": "la2", "NA": "na1", "OCE": "oc1", "TR": "tr1", "RU": "ru"}
     item_decoder = {}
