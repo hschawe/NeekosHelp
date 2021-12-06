@@ -22,7 +22,7 @@ class TFT(commands.Cog):
         self.region_decoder = region_decoder
 
     # @commands.command()
-    # @commands.check(checks.check_if_bot())
+    # @commands.check(checks.check_if_bot)
     # async def tftrank(self, ctx, ):
     #     """Prints the requested players' TFT rank to Discord"""
     #
@@ -30,15 +30,64 @@ class TFT(commands.Cog):
     #
     #     await ctx.channel.send(msg)
 
-    # @commands.command()
-    # @commands.check(checks.check_if_bot())
-    # async def matchhistory(self, ctx, region_code, *, summoner=None):
-    #     # do things
-    #     # matchids [] = request_api()
-    #     # for match in matchids
-    #     #   matchdata {} = get_match_data()
-    #     # embed_msg = print_recentmatch_data()
-    #     await ctx.channel.send(embed=embed_msg)
+    @commands.command()
+    @commands.check(checks.check_if_bot)
+    async def matchhistory(self, ctx, region_code, *, summoner=None):
+        print("MATCHHISTORY / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
+        user = ctx.author
+        ment = user.mention
+
+        # get region routing value OR send error message
+        try:
+            region_route = self.region_decoder[region_code.upper()]
+        except:
+            embed_msg = discord.Embed(
+                color=discord.Colour.red()
+            )
+            msg = "Command format should be: //matchhistory [region code] [summoner] \n\
+            Use //regions to see list of correct region codes."
+            embed_msg.add_field(name="Region code used incorrectly!", value=msg)
+            await ctx.channel.send(embed=embed_msg)
+
+        if region_route in ["br1", "la1", "la2", "na1"]:
+            host = "americas"
+        elif region_route in ["eun1", "euw1", "tr1", "ru"]:
+            host = "europe"
+        else:
+            host = "asia"
+
+        # API calls to get player puuid and match IDs
+        puuid = self.get_player_puuid(summoner, region_route)
+        if type(puuid) is int:
+            embed_msg = discord.Embed(
+                color=discord.Colour.red()
+            )
+            if puuid == 404:
+                msg = "Invalid summoner name used."
+                embed_msg.add_field(name="Error!", value=msg)
+            else:
+                msg = "Status code: {}".format(puuid)
+                embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+            await ctx.channel.send(embed=embed_msg)
+
+        matchids = self.get_matchIDs(puuid, region_route, 9)
+
+        # Check that they have any matches played
+        try:
+            matchID = matchids[0]
+        except IndexError:
+            msg = "No recent matches found for {}.".format(summoner)
+            embed_msg.add_field(name="No recent matches found!", value=msg)
+            await ctx.channel.send(embed=embed_msg)
+
+        embed_msg, match_data_cache = self.get_matchhistory_embed(matchids, summoner, puuid, host)
+
+        # Add more detail to the embed message
+        if ctx.author.avatar is not None:
+            embed_msg.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
+        # Send the matchhistory message
+        await ctx.channel.send(embed=embed_msg)
 
     @commands.command()
     @commands.check(checks.check_if_bot)
@@ -67,6 +116,17 @@ class TFT(commands.Cog):
 
         # API calls to get player puuid and match IDs
         puuid = self.get_player_puuid(summoner, region_route)
+        if type(puuid) is int:
+            embed_msg = discord.Embed(
+                color=discord.Colour.red()
+            )
+            if puuid == 404:
+                msg = "Invalid summoner name used."
+                embed_msg.add_field(name="Error!", value=msg)
+            else:
+                msg = "Status code: {}".format(puuid)
+                embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+            await ctx.channel.send(embed=embed_msg)
 
         matchids = self.get_matchIDs(puuid, region_route, 1)
 
@@ -81,7 +141,7 @@ class TFT(commands.Cog):
         match_data, queue = self.get_tft_match_data(matchID, puuid, host)
 
         # Print the recent match data
-        embed_msg = self.create_recentmatch_embed(match_data, summoner, queue)
+        embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
 
         await ctx.channel.send(embed=embed_msg)
 
@@ -151,10 +211,10 @@ class TFT(commands.Cog):
         match_data = requests.get(API_link, headers=self.headers)
 
         # did the request succeed?
-        riotAPI_statuscode = match_data.status_code
-        if riotAPI_statuscode != 200:
-            errorcode = riotAPI_statuscode
-            print('Riot API not reached, status code:', errorcode)
+        riotAPI_status = match_data.status_code
+        if riotAPI_status != 200:
+            print('Riot API not reached, status code:', riotAPI_status)
+            return riotAPI_status, None
 
         # convert match data to useable format
         match_data = match_data.json()
@@ -170,7 +230,7 @@ class TFT(commands.Cog):
             if participant.get("puuid") == puuid:
                 return participant, queue
 
-    def create_recentmatch_embed(self, match_data, summoner, queue):
+    def get_recentmatch_embed(self, match_data, summoner, queue):
         # get final placement & level
         placement = match_data.get("placement")
         level = match_data.get("level")
@@ -208,22 +268,10 @@ class TFT(commands.Cog):
             unit = list_of_units[x]
             unit_id = unit.get("character_id")
             unit_tier = unit.get("tier") * ":star:"
-            unit_chosen = unit.get("chosen", False)
             unit_item_ids = unit.get("items")
 
             # decode unit ID into unit name
             unit_name = self.name_decoder.get(unit_id, unit_id)
-
-            # If the unit is the chosen unit, make its name bold
-            if unit_chosen != False:
-                try:
-                    chosen_synergy = self.chosen_decoder[unit_chosen]
-                    unit_name = "** Chosen " + unit_name + "** (" \
-                                + chosen_synergy + ")"
-                except:
-                    print("Error with chosen unit:", unit_id, \
-                          "// value given:", unit_chosen)
-                    pass
 
             if len(unit_item_ids) == 0:
                 # create unit_msg without items
@@ -264,6 +312,104 @@ class TFT(commands.Cog):
         embed_msg.add_field(name="Units", value=units_msg, inline=False)
 
         return embed_msg
+
+    def get_matchhistory_embed(self, matchids, summoner, puuid, host):
+        emojis_numbers_list = [":one:", ":two:", ":three:", ":four:", ":five:", ":six:", ":seven:", ":eight:", ":nine:",
+                               ":keycap_ten:"]
+        match_data_cache = []
+
+        # Create the empty embed message
+        embed_msg = discord.Embed(
+            title=f"Match history for {summoner}.",
+            colour=discord.Colour.blue()
+        )
+
+        for i in range(len(matchids)):
+            matchID = matchids[i]
+            emoji = emojis_numbers_list[i]
+
+            # Get the match data
+            match_data, queue = self.get_tft_match_data(matchID, puuid, host)
+
+            # did the request succeed?
+            if match_data is int:
+                if match_data != 200:
+                    print(f'Riot API not reached, status code: {match_data}')
+
+            msg, cache = self.get_match_simple_msg(match_data, queue, puuid)
+            match_data_cache.append(cache)
+
+            embed_msg.add_field(name=emoji, value=msg)
+
+        return embed_msg, match_data_cache
+
+    def get_match_simple_msg(self, match_data, queue, puuid):
+        # final placement & level
+        placement = match_data.get("placement")
+        level = match_data.get("level")
+
+        # creating a list of dictionaries for player's synergy data
+        list_of_synergies = match_data.get("traits")
+
+        # create synergies message
+        synergies_msg = ""
+        for x in range(len(list_of_synergies)):
+            synergy = list_of_synergies[x]
+            if synergy.get("tier_current") > 0:
+                synergy_info = str(synergy.get("name")) + ' ' + str(synergy.get("tier_current"))
+                synergy_txt = self.synergy_decoder.get(synergy_info, synergy_info)
+                synergies_msg = synergies_msg + ' ' + synergy_txt + ","
+        synergies_msg = synergies_msg.rstrip(",")
+
+        # creating a list of dictionaries for player's unit data
+        list_of_units = match_data.get("units")
+
+        # create units message
+        units_msg = ""
+        for x in range((len(list_of_units))):
+            unit = list_of_units[x]
+            unit_id = unit.get("character_id")
+            unit_tier = unit.get("tier") * ':star:'
+            unit_item_ids = unit.get("items")
+
+            # decode unit id into unit name
+            unit_name = self.name_decoder.get(unit_id, unit_id)
+
+            if len(unit_item_ids) == 0:
+                # Create unit_txt without items
+                try:
+                    unit_txt = unit_name + ' - ' + unit_tier
+                except Exception as ex:
+                    unit_txt = "(Error with unit.)"
+                    print("(Error with unit.)", ex, puuid, unit_name, unit_tier)
+            else:
+                # Create unit_txt with items
+                try:
+                    unit_txt = unit_name + ' - ' + unit_tier + ' - '
+                    for i in unit_item_ids:
+                        item_name = self.item_decoder.get(i, "")
+                        unit_txt = unit_txt + ' ' + item_name + ','
+                except Exception as ex:
+                    unit_txt = "(Error with unit.)"
+                    print("(Error with unit.)", ex, puuid, unit_name, unit_tier, unit_item_ids)
+
+            # append unit_txt to message
+            unit_txt = unit_txt.rstrip(',')
+            units_msg = units_msg + '\n' + unit_txt
+
+        # string for the game info
+        msg = '** Placement:** ' + str(placement) + '\nGame Type: ' + queue + '\nSynergies: ' + synergies_msg \
+              + '\n'
+
+        # dictionary containing the match's info
+        cache = {"placement": placement,
+                 "level": level,
+                 "synergies": synergies_msg,
+                 "units": units_msg,
+                 "queue": queue
+                 }
+
+        return msg, cache
 
 
 def setup(bot):
