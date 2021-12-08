@@ -22,18 +22,39 @@ class TFT(commands.Cog):
         self.name_decoder = name_decoder
         self.region_decoder = region_decoder
 
-    # @commands.command()
-    # @commands.check(checks.check_if_bot)
-    # async def tftrank(self, ctx, ):
-    #     """Prints the requested players' TFT rank to Discord"""
-    #
-    #     # do things
-    #
-    #     await ctx.channel.send(msg)
+    @commands.command()
+    @commands.check(checks.check_if_bot)
+    async def regions(self, ctx):
+        """Print bot's accepted region codes to Discord"""
+        msg = "**NA**: North America\n\
+        **EUW**: West Europe\n\
+        **EUNE**: North Europe\n\
+        **OCE**: Oceania\n\
+        **KR**: Korea\n\
+        **BR**: Brazil\n\
+        **LAN**: Latin America North\n\
+        **LAS**: Latin America South\n\
+        **TR**: Turkey\n\
+        **RU**: Russia\n\
+        **JP**: Japan"
+        embed_msg = discord.Embed(
+            colour=discord.Colour.green()
+        )
+        embed_msg.add_field(name="Region Codes", value=msg)
+        await ctx.channel.send(embed=embed_msg)
+
+    @commands.command()
+    @commands.check(checks.check_if_bot)
+    async def tftrank(self, ctx, region_code, *, summoner=None):
+        """Prints the requested players' TFT rank to Discord"""
+        print("TFTRANK / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
+        embed_msg = self.get_player_tft_rank(region_code, summoner)
+        await ctx.channel.send(embed=embed_msg)
 
     @commands.command()
     @commands.check(checks.check_if_bot)
     async def matchhistory(self, ctx, region_code, *, summoner=None):
+        """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
         print("MATCHHISTORY / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
         user = ctx.author
         ment = user.mention
@@ -473,6 +494,82 @@ class TFT(commands.Cog):
                 # Remove this reaction from the list, so we don't return this match again
                 reactions_list[j] = None
             await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner, reactions_list)
+
+    def get_player_tft_rank(self, region_code, summoner):
+        """Returns the summoner's TFT rank as a Discord.py Embed object"""
+        # get region routing value
+        try:
+            region_route = self.region_decoder[region_code.upper()]
+        except:
+            embed_msg = discord.Embed(
+                color=discord.Colour.red()
+            )
+            msg = "Command format should be: //tftrank [region code] [summoner] \n\
+        Use //regions to see list of correct region codes."
+            embed_msg.add_field(name="Region code used incorrectly!", value=msg)
+            return embed_msg
+
+        # requesting summoner's info
+        summonerName = summoner.replace(' ', '%20')
+
+        APIlink = 'https://{}.api.riotgames.com/tft/summoner/v1/summoners/by-name/{}'.format(region_route, summonerName)
+        summoner_data = requests.get(APIlink, headers=self.headers)
+
+        # did the request succeed?
+        riotAPI_status = summoner_data.status_code
+        if riotAPI_status != 200:
+            embed_msg = discord.Embed(
+                color=discord.Colour.red()
+            )
+            if riotAPI_status == 404:
+                msg = "Invalid summoner name used."
+                embed_msg.add_field(name="Error", value=msg)
+            else:
+                msg = "Error status code: {}".format(riotAPI_status)
+                embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+            return embed_msg
+
+        # Convert summoner data to useable format
+        summoner_data = summoner_data.json()
+
+        # Get the summoner's userid
+        userid = summoner_data.get("id")
+
+        # Get the summoner's rank info
+        APIlink = f"https://{region_route}.api.riotgames.com/tft/league/v1/entries/by-summoner/{userid}"
+        ranks_info = requests.get(APIlink, headers=self.headers)
+
+        # Convert rank data to usable format
+        summoner = summoner_data["name"]
+        ranks_info = ranks_info.json()
+        embed_msg = discord.Embed(
+            color=discord.Colour.blue()
+        )
+        embed_msg.title = "Rank info for {}.".format(summoner)
+        if ranks_info is []:
+            msg = "{} is Unranked.".format(summoner)
+            embed_msg.add_field(value=msg)
+        else:
+            for rank_info in ranks_info:
+                queue = rank_info["queueType"]
+                if queue == "RANKED_TFT":
+                    tier = rank_info.get("tier")
+                    tier = tier.capitalize()
+                    rank = rank_info.get("rank")
+                    wins = rank_info.get("wins")
+                    LP = rank_info.get("leaguePoints")
+                    rank_msg = "{} {} {} LP, with {} wins.".format(tier, rank, str(LP), str(wins))
+                    embed_msg.add_field(name="Ranked TFT", value=rank_msg, inline=False)
+                elif queue == "RANKED_TFT_TURBO":
+                    tier = rank_info.get("ratedTier")
+                    if tier == "ORANGE":
+                        tier = "Hyper"
+                    tier = tier.capitalize()
+                    LP = rank_info.get("ratedRating")
+                    wins = rank_info.get("wins")
+                    rank_msg = "{} {} LP, with {} wins.".format(tier, str(LP), str(wins))
+                    embed_msg.add_field(name="HyperRoll", value=rank_msg, inline=False)
+        return embed_msg
 
 
 def setup(bot):
