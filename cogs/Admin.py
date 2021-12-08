@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from NeekosHelp.helpers import checks
+from helpers import checks
 
 
 class Admin(commands.Cog):

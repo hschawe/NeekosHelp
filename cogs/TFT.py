@@ -3,9 +3,9 @@ from discord.ext import commands
 import requests
 import asyncio
 import json
-from NeekosHelp.helpers import checks
-from NeekosHelp.helpers import create_set_decoders
-from NeekosHelp import keys
+from helpers import checks
+from helpers import create_set_decoders
+import keys
 
 
 class TFT(commands.Cog):
