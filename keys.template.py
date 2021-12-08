@@ -1,4 +1,4 @@
-# Once headers/keys are added, rename this file to neekokeys.py 
+# Once headers/keys are added, rename this file to keys.py
 
 # Riot Developer headers
 headers = {}

@@ -1,13 +1,11 @@
-# create_set_decoders.py
 import json
 import os
 
-def main(rootdir):
-    queue_type_decoder = {1090:"Normal",
-                      1100:"Ranked",
-                      1110:"TFT Tutorial",
-                      1111:"Hyper Roll"
-                      }
+
+def create_set_decoders(rootdir):
+    queue_type_decoder = {1090: "Normal", 1100: "Ranked", 1110: "TFT Tutorial", 1130: "Hyper Roll", 1150: "Double Up"}
+    region_decoder = {"BR": "br1", "EUNE": "eun1", "EUW": "euw1", "JP": "jp1", "KR": "kr",
+                      "LAN": "la1", "LAS": "la2", "NA": "na1", "OCE": "oc1", "TR": "tr1", "RU": "ru"}
     item_decoder = {}
     synergy_decoder = {}
     name_decoder = {}
@@ -26,13 +24,13 @@ def main(rootdir):
             if file == "items.json":
                 fpath = os.path.join(subdir, file)
                 item_decoder = create_item_decoder(fpath, item_decoder)
-    
-    return queue_type_decoder, name_decoder, synergy_decoder, item_decoder
-            
+
+    return queue_type_decoder, name_decoder, synergy_decoder, item_decoder, region_decoder
+
 
 def create_item_decoder(f, item_decoder):
     with open(f) as items_file:
-        items = json.load(items_file)    # List of dictionaries
+        items = json.load(items_file)  # List of dictionaries
         for item in items:
             item_decoder[item["id"]] = item["name"]
     return item_decoder
@@ -40,7 +38,7 @@ def create_item_decoder(f, item_decoder):
 
 def create_synergy_decoder(f, synergy_decoder):
     with open(f) as synergies_file:
-        synergies = json.load(synergies_file)    # List of dictionaries
+        synergies = json.load(synergies_file)  # List of dictionaries
         for synergy in synergies:
             synergy_key = synergy["key"]
             synergy_name = synergy["name"]
@@ -52,11 +50,10 @@ def create_synergy_decoder(f, synergy_decoder):
                                                     + " " + synergy_name
     return synergy_decoder
 
-    
+
 def create_champion_decoder(f, name_decoder):
     with open(f) as names_file:
-        names = json.load(names_file)    # List of dictionaries
+        names = json.load(names_file)  # List of dictionaries
         for name in names:
             name_decoder[name["championId"]] = name["name"]
     return name_decoder
-   
