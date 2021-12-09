@@ -22,7 +22,7 @@ class Basic(commands.Cog):
     **//regions** - gives a list of region codes (used in other commands)\n\
     **//ping** - returns pong!\n"
 
-        support_server = "Join the support server to request new commands or report bugs: **https://discord.gg/ZC4m7ut**"
+        support_server = "Join the support server to request new commands or report bugs: **https://discord.gg/n7Dtk43GpU**"
 
         embed_msg = discord.Embed(
             colour=discord.Colour.green()
