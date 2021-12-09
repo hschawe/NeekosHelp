@@ -45,139 +45,164 @@ class TFT(commands.Cog):
 
     @commands.command()
     @commands.check(checks.check_if_bot)
-    async def tftrank(self, ctx, region_code, *, summoner=None):
+    async def tftrank(self, ctx, region_code=None, *, summoner=None):
         """Prints the requested players' TFT rank to Discord"""
-        print("TFTRANK / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
-        embed_msg = self.get_player_tft_rank(region_code, summoner)
+        print("TFTRANK / {} / {} / {}".format(str(summoner), str(region_code), ctx.author))
+        if (region_code == None) or (summoner == None):
+            info_msg = "Command format should be: //tftrank [region code] [summoner]\n Use //regions to see list " \
+                       "of correct region codes. "
+            embed_msg = discord.Embed(
+                colour=discord.Colour.red()
+            )
+            embed_msg.add_field(name="Incorrect command format!", value=info_msg)
+        else:
+            embed_msg = self.get_player_tft_rank(region_code, summoner)
         await ctx.channel.send(embed=embed_msg)
 
     @commands.command()
     @commands.check(checks.check_if_bot)
-    async def matchhistory(self, ctx, region_code, *, summoner=None):
+    async def matchhistory(self, ctx, region_code=None, *, summoner=None):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
-        print("MATCHHISTORY / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
+        print("MATCHHISTORY / {} / {} / {}".format(str(summoner), str(region_code), ctx.author))
         user = ctx.author
         ment = user.mention
 
-        # get region routing value OR send error message
-        try:
-            region_route = self.region_decoder[region_code.upper()]
-        except:
+        if (region_code == None) or (summoner == None):
+            info_msg = "Command format should be: //matchhistory [region code] [summoner]\n Use //regions to see list " \
+                       "of correct region codes. "
             embed_msg = discord.Embed(
-                color=discord.Colour.red()
+                colour=discord.Colour.red()
             )
-            msg = "Command format should be: //matchhistory [region code] [summoner] \n\
-            Use //regions to see list of correct region codes."
-            embed_msg.add_field(name="Region code used incorrectly!", value=msg)
+            embed_msg.add_field(name="Incorrect command format!", value=info_msg)
             await ctx.channel.send(embed=embed_msg)
-
-        if region_route in ["br1", "la1", "la2", "na1"]:
-            host = "americas"
-        elif region_route in ["eun1", "euw1", "tr1", "ru"]:
-            host = "europe"
         else:
-            host = "asia"
+            # get region routing value OR send error message
+            try:
+                region_route = self.region_decoder[region_code.upper()]
+            except KeyError:
+                embed_msg = discord.Embed(
+                    color=discord.Colour.red()
+                )
+                msg = "Command format should be: //matchhistory [region code] [summoner] \n\
+                Use //regions to see list of correct region codes."
+                embed_msg.add_field(name="Incorrect region code used!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
 
-        # API calls to get player puuid and match IDs
-        puuid = self.get_player_puuid(summoner, region_route)
-        if type(puuid) is int:
-            embed_msg = discord.Embed(
-                color=discord.Colour.red()
-            )
-            if puuid == 404:
-                msg = "Invalid summoner name used."
-                embed_msg.add_field(name="Error!", value=msg)
+            if region_route in ["br1", "la1", "la2", "na1"]:
+                host = "americas"
+            elif region_route in ["eun1", "euw1", "tr1", "ru"]:
+                host = "europe"
             else:
-                msg = "Status code: {}".format(puuid)
-                embed_msg.add_field(name="Riot API unresponsive!", value=msg)
-            await ctx.channel.send(embed=embed_msg)
+                host = "asia"
 
-        matchids = self.get_matchIDs(puuid, region_route, 9)
+            # API calls to get player puuid and match IDs
+            puuid = self.get_player_puuid(summoner, region_route)
+            if type(puuid) is int:
+                embed_msg = discord.Embed(
+                    color=discord.Colour.red()
+                )
+                if puuid == 404:
+                    msg = "Invalid summoner name used."
+                    embed_msg.add_field(name="Error!", value=msg)
+                else:
+                    msg = "Status code: {}".format(puuid)
+                    embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
 
-        # Check that they have any matches played
-        try:
-            matchID = matchids[0]
-        except IndexError:
-            msg = "No recent matches found for {}.".format(summoner)
-            embed_msg.add_field(name="No recent matches found!", value=msg)
-            await ctx.channel.send(embed=embed_msg)
+            matchids = self.get_matchIDs(puuid, region_route, 9)
 
-        embed_msg, match_data_cache = self.get_matchhistory_embed(matchids, summoner, puuid, host)
+            # Check that they have any matches played
+            try:
+                matchID = matchids[0]
+            except IndexError:
+                msg = "No recent matches found for {}.".format(summoner)
+                embed_msg.add_field(name="No recent matches found!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
 
-        # Add more detail to the embed message
-        if ctx.author.avatar is not None:
-            embed_msg.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+            embed_msg, match_data_cache = self.get_matchhistory_embed(matchids, summoner, puuid, host)
 
-        # Send the message and add the numbered emojis as reactions
-        history_msg = await ctx.channel.send(embed=embed_msg)
-        if match_data_cache is not None:
-            await history_msg.add_reaction('1️⃣')
-            await history_msg.add_reaction('2️⃣')
-            await history_msg.add_reaction('3️⃣')
-            await history_msg.add_reaction('4️⃣')
-            await history_msg.add_reaction('5️⃣')
-            await history_msg.add_reaction('6️⃣')
-            await history_msg.add_reaction('7️⃣')
-            await history_msg.add_reaction('8️⃣')
-            await history_msg.add_reaction('9️⃣')
+            # Add more detail to the embed message
+            if ctx.author.avatar is not None:
+                embed_msg.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
-        await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
+            # Send the message and add the numbered emojis as reactions
+            history_msg = await ctx.channel.send(embed=embed_msg)
+            if match_data_cache is not None:
+                await history_msg.add_reaction('1️⃣')
+                await history_msg.add_reaction('2️⃣')
+                await history_msg.add_reaction('3️⃣')
+                await history_msg.add_reaction('4️⃣')
+                await history_msg.add_reaction('5️⃣')
+                await history_msg.add_reaction('6️⃣')
+                await history_msg.add_reaction('7️⃣')
+                await history_msg.add_reaction('8️⃣')
+                await history_msg.add_reaction('9️⃣')
+
+            await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
 
     @commands.command()
     @commands.check(checks.check_if_bot)
-    async def recentmatch(self, ctx, region_code, *, summoner=None):
+    async def recentmatch(self, ctx, region_code=None, *, summoner=None):
         """Prints the most recent TFT match to Discord"""
-        print("RECENTMATCH / {} / {} / {}".format(summoner, region_code.upper(), ctx.author))
-
-        # Get correct region routing for API calls
-        try:
-            region_route = self.region_decoder[region_code.upper()]
-        except:
+        print("RECENTMATCH / {} / {} / {}".format(str(summoner), str(region_code), ctx.author))
+        if (region_code == None) or (summoner == None):
+            info_msg = "Command format should be: //recentmatch [region code] [summoner]\n Use //regions to see list " \
+                       "of correct region codes. "
             embed_msg = discord.Embed(
-                color=discord.Colour.red()
+                colour=discord.Colour.red()
             )
-            msg = "Command format should be: //matchhistory [region code] [summoner] \n\
-            Use //regions to see list of correct region codes."
-            embed_msg.add_field(name="Region code used incorrectly!", value=msg)
+            embed_msg.add_field(name="Incorrect command format!", value=info_msg)
             await ctx.channel.send(embed=embed_msg)
-
-        if region_route in ["br1", "la1", "la2", "na1"]:
-            host = "americas"
-        elif region_route in ["eun1", "euw1", "tr1", "ru"]:
-            host = "europe"
         else:
-            host = "asia"
+            # Get correct region routing for API calls
+            try:
+                region_route = self.region_decoder[region_code.upper()]
+            except KeyError:
+                embed_msg = discord.Embed(
+                    color=discord.Colour.red()
+                )
+                msg = "Command format should be: //matchhistory [region code] [summoner] \n\
+                Use //regions to see list of correct region codes."
+                embed_msg.add_field(name="Incorrect region code used!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
 
-        # API calls to get player puuid and match IDs
-        puuid = self.get_player_puuid(summoner, region_route)
-        if type(puuid) is int:
-            embed_msg = discord.Embed(
-                color=discord.Colour.red()
-            )
-            if puuid == 404:
-                msg = "Invalid summoner name used."
-                embed_msg.add_field(name="Error!", value=msg)
+            if region_route in ["br1", "la1", "la2", "na1"]:
+                host = "americas"
+            elif region_route in ["eun1", "euw1", "tr1", "ru"]:
+                host = "europe"
             else:
-                msg = "Status code: {}".format(puuid)
-                embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+                host = "asia"
+
+            # API calls to get player puuid and match IDs
+            puuid = self.get_player_puuid(summoner, region_route)
+            if type(puuid) is int:
+                embed_msg = discord.Embed(
+                    color=discord.Colour.red()
+                )
+                if puuid == 404:
+                    msg = "Invalid summoner name used."
+                    embed_msg.add_field(name="Error!", value=msg)
+                else:
+                    msg = "Status code: {}".format(puuid)
+                    embed_msg.add_field(name="Riot API unresponsive!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
+
+            matchids = self.get_matchIDs(puuid, region_route, 1)
+
+            try:
+                matchID = matchids[0]
+            except IndexError:
+                msg = "No recent matches found for {}.".format(summoner)
+                embed_msg.add_field(name="No recent matches found!", value=msg)
+                await ctx.channel.send(embed=embed_msg)
+
+            # Get the recent match data
+            match_data, queue = self.get_tft_match_data(matchID, puuid, host)
+
+            # Print the recent match data
+            embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
+
             await ctx.channel.send(embed=embed_msg)
-
-        matchids = self.get_matchIDs(puuid, region_route, 1)
-
-        try:
-            matchID = matchids[0]
-        except IndexError:
-            msg = "No recent matches found for {}.".format(summoner)
-            embed_msg.add_field(name="No recent matches found!", value=msg)
-            await ctx.channel.send(embed=embed_msg)
-
-        # Get the recent match data
-        match_data, queue = self.get_tft_match_data(matchID, puuid, host)
-
-        # Print the recent match data
-        embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
-
-        await ctx.channel.send(embed=embed_msg)
 
     def get_player_puuid(self, summoner_name, region_route):
         """
@@ -419,9 +444,9 @@ class TFT(commands.Cog):
                 # Create unit_txt without items
                 try:
                     unit_txt = unit_name + ' - ' + unit_tier
-                except Exception as ex:
+                except:
                     unit_txt = "(Error with unit.)"
-                    print("(Error with unit.)", ex, puuid, unit_name, unit_tier)
+                    print("(Error with unit.)", puuid, unit_name, unit_tier)
             else:
                 # Create unit_txt with items
                 try:
@@ -429,9 +454,9 @@ class TFT(commands.Cog):
                     for i in unit_item_ids:
                         item_name = self.item_decoder.get(i, "")
                         unit_txt = unit_txt + ' ' + item_name + ','
-                except Exception as ex:
+                except:
                     unit_txt = "(Error with unit.)"
-                    print("(Error with unit.)", ex, puuid, unit_name, unit_tier, unit_item_ids)
+                    print("(Error with unit.)", puuid, unit_name, unit_tier, unit_item_ids)
 
             # append unit_txt to message
             unit_txt = unit_txt.rstrip(',')
