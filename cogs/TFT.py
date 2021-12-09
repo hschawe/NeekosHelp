@@ -334,8 +334,14 @@ class TFT(commands.Cog):
 
         embed_msg = discord.Embed(
             title=f"Most recent match for {summoner}.",
-            colour=discord.Colour.gold()
         )
+
+        if placement == 1:
+            embed_msg.colour = discord.Colour.gold()
+        elif placement <= 4:
+            embed_msg.colour = discord.Colour.blue()
+        else:
+            embed_msg.colour = discord.Colour.red()
 
         game_info = "Game type: " + queue + "\n " \
                     + "Placement: " + str(placement) + "\n " \
