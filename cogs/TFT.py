@@ -277,12 +277,14 @@ class TFT(commands.Cog):
 
         # convert match data to useable format
         match_data = match_data.json()
+        print(match_data)
         match_data = match_data.get("info")
         match_participants = match_data.get("participants")
 
         # save the queue type (normal, ranked) data
         queue = match_data.get("queue_id")
         queue = self.queue_type_decoder.get(queue)
+        queue = queue or 'NULL QUEUE TYPE'
 
         # Go to the player requested
         for participant in match_participants:
@@ -332,7 +334,7 @@ class TFT(commands.Cog):
             # decode unit ID into unit name
             unit_name = self.name_decoder.get(unit_id, unit_id)
 
-            if len(unit_item_ids) == 0:
+            if unit_item_ids and len(unit_item_ids) == 0:
                 # create unit_msg without items
                 try:
                     unit_msg = unit_name + " - " + unit_tier
@@ -603,5 +605,5 @@ class TFT(commands.Cog):
         return embed_msg
 
 
-def setup(bot):
-    bot.add_cog(TFT(bot))
+async def setup(bot):
+    await bot.add_cog(TFT(bot))

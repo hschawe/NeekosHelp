@@ -30,6 +30,16 @@ Returns the TFT rank for the specified summoner.
 
 
 ## How to set up your own bot
+
+Setup a python development environment :)
+
+In the root directory of this project create a .env file that looks like:
+```
+# .env
+DISCORD_TOKEN={DISCORD API KEY FROM INSTRUCTIONS BELOW}
+RIOT_TOKEN={RIOT API KEY FROM INSTRUCTIONS BELOW}
+```
+
 You'll need 3 things:
 * Riot TFT files
 * a Riot API key

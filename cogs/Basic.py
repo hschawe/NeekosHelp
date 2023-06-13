@@ -15,7 +15,7 @@ class Basic(commands.Cog):
 
     @commands.command()
     @commands.check(checks.check_if_bot)
-    async def help(self, ctx):
+    async def helpmeneeko(self, ctx):
         msg = "\n**//recentmatch** *[region] [summoner]* - gives the most recent TFT match for the specified summoner\n\
     **//matchhistory** *[region] [summoner]* - gives a list of TFT matches for the specified summoner. Add a reaction to view detailed match info!\n\
     **//tftrank** *[region] [summoner]* - gives the summoner's tft rank\n\
@@ -32,6 +32,5 @@ class Basic(commands.Cog):
 
         await(ctx.channel.send(embed=embed_msg))
 
-
-def setup(bot):
-    bot.add_cog(Basic(bot))
+async def setup(bot):
+    await bot.add_cog(Basic(bot))
