@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord import app_commands
 from helpers import checks
 
 
@@ -8,12 +9,13 @@ class Basic(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def ping(self, ctx):
+        print('Command tree synced.')
         await ctx.send('pong!')
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def helpmeneeko(self, ctx):
         msg = "\n**//recentmatch** *[region] [summoner]* - gives the most recent TFT match for the specified summoner\n\

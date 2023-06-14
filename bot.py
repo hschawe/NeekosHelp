@@ -18,7 +18,7 @@ async def on_ready():
         await bot.load_extension("cogs.TopGG")
     print('We have logged in as {0.user}'.format(bot))
     # Set the Bot's status message (Listening to //help)
-    activity = discord.Activity(name='//help', type=discord.ActivityType.listening)
+    activity = discord.Activity(name='//helpmeneeko', type=discord.ActivityType.listening)
     await bot.change_presence(activity=activity)
 
 bot.run(discord_bot_key)

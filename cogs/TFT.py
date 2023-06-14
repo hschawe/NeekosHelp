@@ -22,7 +22,7 @@ class TFT(commands.Cog):
         self.name_decoder = name_decoder
         self.region_decoder = region_decoder
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def regions(self, ctx):
         """Print bot's accepted region codes to Discord"""
@@ -43,7 +43,7 @@ class TFT(commands.Cog):
         embed_msg.add_field(name="Region Codes", value=msg)
         await ctx.channel.send(embed=embed_msg)
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def tftrank(self, ctx, region_code=None, *, summoner=None):
         """Prints the requested players' TFT rank to Discord"""
@@ -59,7 +59,7 @@ class TFT(commands.Cog):
             embed_msg = self.get_player_tft_rank(region_code, summoner)
         await ctx.channel.send(embed=embed_msg)
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def matchhistory(self, ctx, region_code=None, *, summoner=None):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
@@ -140,7 +140,7 @@ class TFT(commands.Cog):
 
             await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
 
-    @commands.command()
+    @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def recentmatch(self, ctx, region_code=None, *, summoner=None):
         """Prints the most recent TFT match to Discord"""
@@ -277,7 +277,6 @@ class TFT(commands.Cog):
 
         # convert match data to useable format
         match_data = match_data.json()
-        print(match_data)
         match_data = match_data.get("info")
         match_participants = match_data.get("participants")
 
