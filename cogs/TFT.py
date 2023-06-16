@@ -14,13 +14,15 @@ class TFT(commands.Cog):
 
         self.headers = keys.headers
 
-        queue_type_decoder, name_decoder, synergy_decoder, item_decoder, region_decoder = create_set_decoders.create_set_decoders(
-            "../set-info")
+        queue_type_decoder, game_types, name_decoder, synergy_decoder, item_decoder, region_decoder, rarity_decoder = create_set_decoders.create_set_decoders(
+            "set-info")
         self.queue_type_decoder = queue_type_decoder
+        self.game_types = game_types
         self.item_decoder = item_decoder
         self.synergy_decoder = synergy_decoder
         self.name_decoder = name_decoder
         self.region_decoder = region_decoder
+        self.rarity_decoder = rarity_decoder
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -268,7 +270,6 @@ class TFT(commands.Cog):
 
         API_link = "https://{}.api.riotgames.com/tft/match/v1/matches/{}".format(host, matchID)
         match_data = requests.get(API_link, headers=self.headers)
-
         # did the request succeed?
         riotAPI_status = match_data.status_code
         if riotAPI_status != 200:
@@ -281,9 +282,9 @@ class TFT(commands.Cog):
         match_participants = match_data.get("participants")
 
         # save the queue type (normal, ranked) data
-        queue = match_data.get("queue_id")
-        queue = self.queue_type_decoder.get(queue)
-        queue = queue or 'NULL QUEUE TYPE'
+        queue = match_data.get("tft_game_type")
+        queue = self.game_types.get(queue)
+        queue = queue or 'Not Available'
 
         # Go to the player requested
         for participant in match_participants:
@@ -306,10 +307,9 @@ class TFT(commands.Cog):
             # if the synergy is active, append the synergy to the list
             # of active synergies
             if synergy.get("tier_current") > 0:
-                synergy_info = str(synergy.get("name")) + ' ' \
+                synergy_info = self.synergy_decoder.get(synergy.get("name")) + ' ' \
                                + str(synergy.get("tier_current"))
-                synergy_txt = self.synergy_decoder.get(synergy_info, synergy_info)
-                synergies_msg += " " + synergy_txt + ","
+                synergies_msg += " " + synergy_info + ","
 
         # Remove the trailing comma
         synergies_msg = synergies_msg.rstrip(",")
@@ -321,37 +321,37 @@ class TFT(commands.Cog):
 
         # creating a list of dictionaries for player's unit data
         list_of_units = match_data.get("units")
-
         # Create string to hold unit info for bot's message
         units_msg = ""
         for x in range(len(list_of_units)):
             unit = list_of_units[x]
-            unit_id = unit.get("character_id")
+            unit_id = unit.get("character_id").lower()
             unit_tier = unit.get("tier") * ":star:"
-            unit_item_ids = unit.get("items")
+            unit_cost = self.rarity_decoder.get(unit.get("rarity"), " ")
+            unit_item_ids = unit.get("itemNames") or []
 
             # decode unit ID into unit name
-            unit_name = self.name_decoder.get(unit_id, unit_id)
-
-            if unit_item_ids and len(unit_item_ids) == 0:
+            unit_name = self.name_decoder.get(unit_id) or unit.get("name")
+            if len(unit_item_ids) == 0:
                 # create unit_msg without items
                 try:
-                    unit_msg = unit_name + " - " + unit_tier
+                    unit_msg = '*'+unit_name + '* - '+ unit_tier + "  |  " + unit_cost 
                 except:
                     unit_msg = "(error with unit.)"
             else:
                 # create unit_msg with items
                 try:
-                    unit_msg = unit_name + " - " + unit_tier + " - "
+                    unit_msg = '*'+unit_name + '* - '+ unit_tier + "  |  " + unit_cost + '\n ['
                     for i in unit_item_ids:
                         item_name = self.item_decoder.get(i, "")
                         unit_msg = unit_msg + " " + item_name + ","
+                    unit_msg = unit_msg.rstrip(',')
+                    unit_msg = unit_msg + " ]"
                 except:
                     unit_msg = "(error with unit.)"
 
             # append unit_txt to units_msg
-            unit_msg = unit_msg.rstrip(',')
-            units_msg = units_msg + '\n' + unit_msg
+            units_msg = units_msg + '\n\n' + unit_msg
 
         # Check that units were found - if units is an empty string,
         # make it "no units found."
@@ -364,8 +364,12 @@ class TFT(commands.Cog):
 
         if placement == 1:
             embed_msg.colour = discord.Colour.gold()
+        elif placement == 2:
+            embed_msg.colour = discord.Colour.light_gray()
+        elif placement == 3:
+            embed_msg.colour = discord.Colour.dark_orange()
         elif placement <= 4:
-            embed_msg.colour = discord.Colour.blue()
+            embed_msg.colour = discord.Colour.dark_theme()
         else:
             embed_msg.colour = discord.Colour.red()
 
@@ -376,6 +380,8 @@ class TFT(commands.Cog):
         embed_msg.add_field(name="Game Info", value=game_info, inline=False)
         embed_msg.add_field(name="Synergies", value=synergies_msg, inline=False)
         embed_msg.add_field(name="Units", value=units_msg, inline=False)
+        if placement == 1:
+            embed_msg.add_field(name="Neeko says...", value= "\"Ohh... Wish I could stay like this forever.\"", inline=False)
 
         return embed_msg
 
