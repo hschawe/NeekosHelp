@@ -4,7 +4,7 @@ import os
 
 def create_set_decoders(rootdir):
     queue_type_decoder = {1090: "Normal", 1100: "Ranked", 1110: "TFT Tutorial", 1130: "Hyper Roll", 1150: "Double Up"}
-    game_types = {"pairs": "Double Up", "standard": "Normal", "ranked": "Ranked", "turbo": "Hyper Roll"}
+    game_types = {"pairs": "Double Up", "standard": "Ranked", "normal": "Normal", "turbo": "Hyper Roll"}
     region_decoder = {"BR": "br1", "EUNE": "eun1", "EUW": "euw1", "JP": "jp1", "KR": "kr",
                       "LAN": "la1", "LAS": "la2", "NA": "na1", "OCE": "oc1", "TR": "tr1", "RU": "ru"}
     rarity_decoder = {0: '1 cost', 1:'2 cost', 2:'3 cost',4:'4 cost',6:'5 cost'}

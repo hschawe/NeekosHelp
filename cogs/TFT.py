@@ -5,6 +5,7 @@ import asyncio
 import json
 from helpers import checks
 from helpers import create_set_decoders
+from helpers import talkies
 import keys
 
 
@@ -381,7 +382,9 @@ class TFT(commands.Cog):
         embed_msg.add_field(name="Synergies", value=synergies_msg, inline=False)
         embed_msg.add_field(name="Units", value=units_msg, inline=False)
         if placement == 1:
-            embed_msg.add_field(name="Neeko says...", value= "\"Ohh... Wish I could stay like this forever.\"", inline=False)
+            embed_msg.add_field(name="Neeko says...", value=talkies.get_excited_line(), inline=False)
+        elif placement < 4:
+            embed_msg.add_field(name="Neeko says...", value=talkies.get_sad_line(), inline=False)
 
         return embed_msg
 
