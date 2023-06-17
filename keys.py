@@ -13,3 +13,7 @@ headers = {
 
 # Discord bot key
 discord_bot_key = os.getenv('DISCORD_TOKEN')
+
+# Top.gg key
+# Discord bot key
+topgg_token = os.getenv('TOPGG_KEY')

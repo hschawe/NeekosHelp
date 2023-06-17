@@ -5,7 +5,9 @@ SET_INFO_DIR = 'set-info'
 
 queue_type = {1090: "Normal", 1100: "Ranked", 1110: "TFT Tutorial", 1130: "Hyper Roll", 1150: "Double Up"}
 game_types = {"pairs": "Double Up", "standard": "Ranked", "normal": "Normal", "turbo": "Hyper Roll"}
-region = {"BR": "br1", "EUNE": "eun1", "EUW": "euw1", "JP": "jp1", "KR": "kr", "LAN": "la1", "LAS": "la2", "NA": "na1", "OCE": "oc1", "TR": "tr1", "RU": "ru"}
+region = {"BR": "br1", "EUNE": "eun1", "EUN": "eun1", "EUW": "euw1", "JP": "jp1", "KR": "kr",
+          "LAN": "la1", "LAS": "la2", "NA": "na1", "OCE": "oc1", "TR": "tr1", "RU": "ru", "PH": "ph2",
+          "SG": "sg2", "TH": "th2", "TW": "tw2", "VN": "vn2" }
 cost = {0: '1 Cost', 1:'2 Cost', 2:'3 Cost',4:'4 Cost',6:'5 Cost',9:'Summon',99:''}
 
 def create_item(f):
