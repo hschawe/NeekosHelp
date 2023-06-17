@@ -5,8 +5,7 @@ import asyncio
 import json
 from helpers import checks
 from helpers import helpers
-from helpers import create_set_decoders
-from helpers import create_decoders
+from helpers import create_decoders as decoder
 from helpers import talkies
 import keys
 
@@ -14,18 +13,7 @@ import keys
 class TFT(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-
         self.headers = keys.headers
-
-        queue_type_decoder, game_types, name_decoder, synergy_decoder, item_decoder, region_decoder, rarity_decoder = create_set_decoders.create_set_decoders(
-            "set-info")
-        self.queue_type_decoder = queue_type_decoder
-        self.game_types = game_types
-        self.item_decoder = item_decoder
-        self.synergy_decoder = synergy_decoder
-        self.name_decoder = name_decoder
-        self.region_decoder = region_decoder
-        self.rarity_decoder = rarity_decoder
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -83,7 +71,7 @@ class TFT(commands.Cog):
         else:
             # get region routing value OR send error message
             try:
-                region_route = self.region_decoder[region_code.upper()]
+                region_route = decoder.region[region_code.upper()]
             except KeyError:
                 embed_msg = discord.Embed(
                     color=discord.Colour.red()
@@ -161,7 +149,7 @@ class TFT(commands.Cog):
         else:
             # Get correct region routing for API calls
             try:
-                region_route = self.region_decoder[region_code.upper()]
+                region_route = decoder.region[region_code.upper()]
             except KeyError:
                 embed_msg = discord.Embed(
                     color=discord.Colour.red()
@@ -286,7 +274,7 @@ class TFT(commands.Cog):
 
         # save the queue type (normal, ranked) data
         queue = match_data.get("tft_game_type")
-        queue = self.game_types.get(queue)
+        queue = decoder.game_types.get(queue)
         queue = queue or 'Not Available'
 
         # Go to the player requested
@@ -313,7 +301,7 @@ class TFT(commands.Cog):
         units = helpers.get_player_units_from_match(match_data)
         unit_messages = []
         for key, unit in units.items():
-            temp_msg = "*" + unit["name"] + "* - " + (unit["tier"] * ":star:") + " | " + create_decoders.cost[unit["cost"]] + "\n"
+            temp_msg = "*" + unit["name"] + "* - " + (unit["tier"] * ":star:") + " | " + decoder.cost[unit["cost"]] + "\n"
             if len(unit["items"]) > 0:
                 items = helpers.get_unit_items(unit)
                 item_msg = '[ '
@@ -442,7 +430,7 @@ class TFT(commands.Cog):
         """Returns the summoner's TFT rank as a Discord.py Embed object"""
         # get region routing value
         try:
-            region_route = self.region_decoder[region_code.upper()]
+            region_route = decoder.region[region_code.upper()]
         except:
             embed_msg = discord.Embed(
                 color=discord.Colour.red()
