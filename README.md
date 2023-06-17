@@ -41,14 +41,26 @@ RIOT_TOKEN={RIOT API KEY FROM INSTRUCTIONS BELOW}
 ```
 
 You'll need 3 things:
-* Riot TFT files
-* a Riot API key
-* a Discord Bot key. 
+1. Riot TFT files
+2. a Riot API key
+3. a Discord Bot key. 
 
 (Make sure that the last 2 remain private, don't share them with anyone else!)
 
-Riot TFT files & API key: navigate to https://developer.riotgames.com/ and login. To get the TFT files, use the top Docs bar and navigate to Teamfight Tactics section. Scroll down to Static Data and download the files under Current Set. Place these extracted json files (champions, items, and traits) in the same folder as your bot .py file. Now you will get an API key. Click APIS on the top bar, and run any API request (I recommend running LOL-STATUS-V3 because you won't need to input any extra info). After the command is run, copy the entire Request Headers surrounded by curly braces. Paste this over {'HEADER_GOES_HERE'} in line 10 of the main file.
+1. Riot TFT files 
+   * Login to https://developer.riotgames.com/ 
+   * At the top bar navigate to Docs > League of Legends. 
+   * Scroll down to "Data Dragon" and download the latest tar.
+   * Untar these files, navigate to the data directory in the untarred files. You can choose any language, I use en_US. Copy files starting with tft-* into the NeekosHelp/set-info/ directory.
+2. Riot API key
+   * Same website, https://developer.riotgames.com/ 
+   * Either use a development key (Riot Fist on top left, refresh the key and copy)
+   * Or use an application key (you'll have to register a product with Riot)
+   * Paste copied key into .env file
+3. Discord Bot token
+   * Go to https://discord.com/developers/applications
+   * Make a New Application, then navigate to Bot on the left sidebar. Click Add Bot, then copy its Token. 
+   * On the same page, scroll down from where you copied the token, turn on the "Message Content Intent" 
+   * Paste token into .env file
 
-Discord Bot token: Obtained on discord developer portal, login and navigate to Applications on the left sidebar. At the top, click New Application, then navigate to Bot on the left sidebar. Click Add Bot, then copy its Token. Paste this token (in single quotes) in parenthesis to replace 'DISCORD_KEY' on line 1024 of the main file.
-
-Another note: Line 323 uses a key from top.gg to post the public Neeko's Help's server count to top.gg. You don't need to mess with this.
+You can (mostly) safely ignore the top.gg references in the code. The official bot is advertised on top.gg, it uses this to post the public Neeko's Help's server count to the site. 
