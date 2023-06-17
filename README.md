@@ -38,6 +38,7 @@ In the root directory of this project create a .env file that looks like:
 # .env
 DISCORD_TOKEN={DISCORD API KEY FROM INSTRUCTIONS BELOW}
 RIOT_TOKEN={RIOT API KEY FROM INSTRUCTIONS BELOW}
+TOPGG_TOKEN={ONLY USED BY OFFICIAL BOT; FROM TOPGG, INSTRUCTIONS BELOW}
 ```
 
 You'll need 3 things:
@@ -64,3 +65,5 @@ You'll need 3 things:
    * Paste token into .env file
 
 You can (mostly) safely ignore the top.gg references in the code. The official bot is advertised on top.gg, it uses this to post the public Neeko's Help's server count to the site. 
+
+The top.gg token is obtained from top.gg. Login, navigate Profile > Discord Bots > Edit > Webhooks > reveal and copy the token. Paste into .env. 
