@@ -29,7 +29,13 @@ class TFT(commands.Cog):
         **LAS**: Latin America South\n\
         **TR**: Turkey\n\
         **RU**: Russia\n\
-        **JP**: Japan"
+        **JP**: Japan\n\
+        **PH**: Philippines\n\
+        **SG**: Singapore\n\
+        **TH**: Thailand\n\
+        **TW**: Taiwan\n\
+        **VN**: Vietnam\n"
+
         embed_msg = discord.Embed(
             colour=discord.Colour.green()
         )
@@ -85,6 +91,8 @@ class TFT(commands.Cog):
                 host = "americas"
             elif region_route in ["eun1", "euw1", "tr1", "ru"]:
                 host = "europe"
+            elif region_route in ["oc1", "ph2", "sg2", "th2", "tw2", "vn2"]:
+                host = "sea"
             else:
                 host = "asia"
 
@@ -163,6 +171,8 @@ class TFT(commands.Cog):
                 host = "americas"
             elif region_route in ["eun1", "euw1", "tr1", "ru"]:
                 host = "europe"
+            elif region_route in ["oc1", "ph2", "sg2", "th2", "tw2", "vn2"]:
+                host = "sea"
             else:
                 host = "asia"
 
@@ -231,6 +241,8 @@ class TFT(commands.Cog):
             host = "americas"
         elif region_route in ["eun1", "euw1", "tr1", "ru"]:
             host = "europe"
+        elif region_route in ["oc1", "ph2", "sg2", "th2", "tw2", "vn2"]:
+            host = "sea"
         else:
             host = "asia"
 
