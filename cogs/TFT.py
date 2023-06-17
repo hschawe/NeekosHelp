@@ -3,10 +3,7 @@ from discord.ext import commands
 import requests
 import asyncio
 import json
-from helpers import checks
-from helpers import helpers
-from helpers import create_decoders as decoder
-from helpers import talkies
+from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
 
@@ -419,6 +416,17 @@ class TFT(commands.Cog):
                 match_info = match_data_cache[j]
                 queue = match_info.get("queue")
                 embed_msg = self.get_recentmatch_embed(match_info['match_data'], summoner, match_info['queue'])
+                numb = ''
+                if j in [3, 4, 5, 6, 7, 8]:
+                    numb = str(j + 1) + 'th'
+                elif j == 0:
+                    numb = '1st'
+                elif j == 1:
+                    numb = '2nd'
+                elif j == 2:
+                    numb = '3rd'
+                embed_msg.title="{} most recent match for {}".format(numb, summoner)
+
                 await ctx.channel.send(embed=embed_msg)
 
                 # Run again so we can handle multiple reactions
