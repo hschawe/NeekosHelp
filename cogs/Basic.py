@@ -12,7 +12,6 @@ class Basic(commands.Cog):
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def ping(self, ctx):
-        print('Command tree synced.')
         await ctx.send('pong!')
 
     @commands.hybrid_command()
