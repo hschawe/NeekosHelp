@@ -17,3 +17,6 @@ discord_bot_key = os.getenv('DISCORD_TOKEN')
 # Top.gg key
 # Discord bot key
 topgg_token = os.getenv('TOPGG_KEY')
+
+#Prod or Test environment
+environment = os.getenv('ENVIRONMENT')
