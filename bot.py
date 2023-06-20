@@ -12,17 +12,21 @@ print("Do you want to running locally (with test keys) or production (with offic
 environment = input("Please input 'test' or 'prod': ")
 
 # Run the Discord bot and add cogs
-bot  = commands.Bot(command_prefix = '//', intents=intents)
+bot = commands.Bot(command_prefix='//', intents=intents)
+
+
 @bot.event
 async def on_ready():
+    """Runs when bot is loaded."""
     await bot.load_extension("cogs.Basic")
     await bot.load_extension("cogs.Admin")
     await bot.load_extension("cogs.TFT")
     if environment == "prod":
         await bot.load_extension("cogs.TopGG")
-    print('We have logged in as {0.user}'.format(bot))
+    print(f"We have logged in as {bot.user}")
     # Set the Bot's status message (Listening to //help)
-    activity = discord.Activity(name='//helpmeneeko', type=discord.ActivityType.listening)
+    activity = discord.Activity(
+        name='//helpmeneeko', type=discord.ActivityType.listening)
     await bot.change_presence(activity=activity)
 
 bot.run(discord_bot_key)

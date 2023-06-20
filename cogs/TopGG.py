@@ -6,6 +6,8 @@ from helpers import checks
 
 
 class TopGG(commands.Cog):
+    """Class for TopGG bot commands"""
+
     def __init__(self, bot):
         self.bot = bot
         # Set this to your DBL token
@@ -22,4 +24,5 @@ class TopGG(commands.Cog):
 
 
 def setup(bot):
+    """Discordpy setup function for cog."""
     bot.add_cog(TopGG(bot))

@@ -1,6 +1,8 @@
 from helpers import create_decoders as decoder
 
+
 def get_player_traits_from_match(match_data):
+    """Function that transforms player match riot api data."""
     traits_from_api = match_data.get("traits")
     traits = {}
     for trait in traits_from_api:
@@ -12,7 +14,9 @@ def get_player_traits_from_match(match_data):
         }
     return traits
 
+
 def get_player_units_from_match(match_data):
+    """Function that transforms player units riot api data."""
     units_from_api = match_data.get("units")
     units = {}
     for unit in units_from_api:
@@ -25,7 +29,9 @@ def get_player_units_from_match(match_data):
         }
     return units
 
+
 def get_unit_items(unit):
+    """Function that serializes item data that a unit has."""
     items = {}
     for item in unit["items"]:
         items[item] = {
