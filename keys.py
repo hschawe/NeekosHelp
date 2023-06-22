@@ -20,3 +20,4 @@ topgg_token = os.getenv('TOPGG_KEY')
 
 #Prod or Test environment
 environment = os.getenv('ENVIRONMENT')
+

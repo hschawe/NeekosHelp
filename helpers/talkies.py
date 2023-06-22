@@ -25,8 +25,12 @@ not_so_excited_lines = [
     "Yuck! Take a bath. Gross."
 ]
 
+
 def get_excited_line():
+    """Function that returns an excited voice line from Neeko."""
     return random.choice(excited_lines)
 
+
 def get_sad_line():
+    """Function that returns a not so excited voice line from Neeko."""
     return random.choice(not_so_excited_lines)

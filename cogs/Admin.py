@@ -4,6 +4,7 @@ from helpers import checks
 
 
 class Admin(commands.Cog):
+    """Class that holds all admin related commands"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -11,6 +12,7 @@ class Admin(commands.Cog):
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def myuserid(self, ctx):
+        """Command that returns discord user id"""
         # get your discord user ID
         disc_userid = ctx.author.id
         mention = ctx.author.mention
@@ -20,14 +22,17 @@ class Admin(commands.Cog):
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def updatemessage(self, ctx, *, msg):
+        """Command that updates bots status message"""
         print("Changing status to", msg)
-        activity = discord.Activity(name=msg, type=discord.ActivityType.listening)
+        activity = discord.Activity(
+            name=msg, type=discord.ActivityType.listening)
         await self.bot.change_presence(activity=activity)
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def sync(self, ctx):
+        """Command that syncs commands for slash command use"""
         print("Syncing")
         await ctx.bot.tree.sync()
         embed = discord.Embed(
@@ -36,5 +41,7 @@ class Admin(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+
 async def setup(bot):
+    """Discordpy cog setup function"""
     await bot.add_cog(Admin(bot))

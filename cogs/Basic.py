@@ -5,6 +5,7 @@ from helpers import checks
 
 
 class Basic(commands.Cog):
+    """Class for basic bot commands"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -12,11 +13,13 @@ class Basic(commands.Cog):
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def ping(self, ctx):
+        """Command that returns pong!"""
         await ctx.send('pong!')
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def helpmeneeko(self, ctx):
+        """Command that returns help message."""
         msg = "\n**//recentmatch** *[region] [summoner]* - gives the most recent TFT match for the specified summoner\n\
     **//matchhistory** *[region] [summoner]* - gives a list of TFT matches for the specified summoner. Add a reaction to view detailed match info!\n\
     **//tftrank** *[region] [summoner]* - gives the summoner's tft rank\n\
@@ -29,9 +32,12 @@ class Basic(commands.Cog):
             colour=discord.Colour.green()
         )
         embed_msg.add_field(name="Command List", value=msg, inline=False)
-        embed_msg.add_field(name="Need more help?", value=support_server, inline=False)
+        embed_msg.add_field(name="Need more help?",
+                            value=support_server, inline=False)
 
         await(ctx.channel.send(embed=embed_msg))
 
+
 async def setup(bot):
+    """Discordpy cog setup function"""
     await bot.add_cog(Basic(bot))
