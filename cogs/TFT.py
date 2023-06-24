@@ -528,6 +528,31 @@ class TFT(commands.Cog):
         return embed_msg
 
 
+    @commands.hybrid_command()
+    @commands.check(checks.check_if_bot)
+    async def table(self, ctx, type):
+        """
+        Return Set 9 tables for piltover (trait) cash out, spoils of war (augment) drop table, golden egg (augment) cash out.
+        Accepted input types are 'piltover', 'spoilsofwar' / 'spoils', 'goldenegg' / 'egg' / 'goldegg'
+        """
+        if type == "piltover":
+            url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
+            path = "./set-info/set9-external-resources/Piltover_table.png"
+        elif type == "spoils" or type == "spoilsofwar":
+            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
+            path = "./set-info/set9-external-resources/Spoils_of_war.png"
+        elif type == "goldenegg" or type == "egg" or type == "goldegg":
+            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
+            path = "./set-info/set9-external-resources/Golden_egg.png"
+        else:
+            msg = "An improper table type was requested. Tables types supported are \"piltover\", \"spoilsofwar\", and \"goldenegg\"."
+            await ctx.channel.send(content=msg)
+            return
+
+        with open(path, "rb") as f:
+            await ctx.channel.send(content=url, file=discord.File(f))
+
+
 async def setup(bot):
     """Discordpy cog setup"""
     await bot.add_cog(TFT(bot))
