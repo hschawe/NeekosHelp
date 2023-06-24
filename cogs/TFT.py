@@ -62,32 +62,31 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def matchhistory(self, ctx, region_code=None, *, summoner=None):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
+
         print(
             f"MATCHHISTORY / {str(summoner)} / {str(region_code)} / {ctx.author}")
 
-        if (region_code is None) or (summoner is None):
-            info_msg = "Command format should be: //matchhistory [region code] [summoner]\n Use //regions to see list " \
-                       "of correct region codes. "
-            embed_msg = discord.Embed(
+        improper_format_msg = "Command format should be: //matchhistory [region code] [summoner]\n Use //regions to see list " \
+                              "of correct region codes. "
+
+        error_embed_template = discord.Embed(
                 colour=discord.Colour.red()
             )
-            embed_msg.add_field(
-                name="Incorrect command format!", value=info_msg)
-            await ctx.channel.send(embed=embed_msg)
-        else:
-            # get region routing value OR send error message
-            try:
-                region_route = decoder.region[region_code.upper()]
-            except KeyError:
-                embed_msg = discord.Embed(
-                    color=discord.Colour.red()
-                )
-                msg = "Command format should be: //matchhistory [region code] [summoner] \n\
-                Use //regions to see list of correct region codes."
-                embed_msg.add_field(
-                    name="Incorrect region code used!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
 
+        if (region_code is None) or (summoner is None):
+            error_embed_template.add_field(
+                name="Incorrect command format!", value=improper_format_msg)
+            await ctx.channel.send(embed=error_embed_template)
+            return
+        elif region_code.upper() not in decoder.region.keys():
+            error_embed_template.add_field(
+                name="Incorrect region code used!", value=improper_format_msg)
+            await ctx.channel.send(embed=error_embed_template)
+            return
+        else:
+            placeholder_msg = await ctx.channel.send("processing match history, please wait...")
+
+            region_route = decoder.region[region_code.upper()]
             if region_route in ["br1", "la1", "la2", "na1"]:
                 host = "americas"
             elif region_route in ["eun1", "euw1", "tr1", "ru"]:
@@ -100,17 +99,16 @@ class TFT(commands.Cog):
             # API calls to get player puuid and match IDs
             puuid = self.get_player_puuid(summoner, region_route)
             if isinstance(puuid, int):
-                embed_msg = discord.Embed(
-                    color=discord.Colour.red()
-                )
+                # If puuid is an int, it's actually a REST API error code
                 if puuid == 404:
                     msg = "Invalid summoner name used."
-                    embed_msg.add_field(name="Error!", value=msg)
+                    error_embed_template.add_field(name="Error!", value=msg)
                 else:
                     msg = f"Status code: {puuid}"
-                    embed_msg.add_field(
+                    error_embed_template.add_field(
                         name="Riot API unresponsive!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
+                await placeholder_msg.edit(content=None, embed=error_embed_template)
+                return
 
             match_ids = self.get_match_ids(puuid, region_route, 9)
 
@@ -119,8 +117,9 @@ class TFT(commands.Cog):
                 matchID = match_ids[0]
             except IndexError:
                 msg = f"No recent matches found for {summoner}."
-                embed_msg.add_field(name="No recent matches found!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
+                error_embed_template.add_field(name="No recent matches found!", value=msg)
+                await placeholder_msg.edit(content=None, embed=error_embed_template)
+                return
 
             embed_msg, match_data_cache = self.get_matchhistory_embed(
                 match_ids, summoner, puuid, host)
@@ -131,18 +130,7 @@ class TFT(commands.Cog):
                                      icon_url=ctx.author.avatar)
 
             # Send the message and add the numbered emojis as reactions
-            history_msg = await ctx.channel.send(embed=embed_msg)
-            if match_data_cache is not None:
-                await history_msg.add_reaction('1️⃣')
-                await history_msg.add_reaction('2️⃣')
-                await history_msg.add_reaction('3️⃣')
-                await history_msg.add_reaction('4️⃣')
-                await history_msg.add_reaction('5️⃣')
-                await history_msg.add_reaction('6️⃣')
-                await history_msg.add_reaction('7️⃣')
-                await history_msg.add_reaction('8️⃣')
-                await history_msg.add_reaction('9️⃣')
-
+            history_msg = await placeholder_msg.edit(content=None, embed=embed_msg)
             await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
 
     @commands.hybrid_command()
@@ -398,6 +386,8 @@ class TFT(commands.Cog):
 
             embed_msg.add_field(name=emoji, value=msg)
 
+        embed_msg.set_footer(text="React with an emoji 1️⃣ through 9️⃣ to see more details about that match!")
+
         return embed_msg, match_data_cache
 
     def get_match_simple_msg(self, match_data, queue, puuid):
@@ -429,16 +419,10 @@ class TFT(commands.Cog):
             # Wait for reactions for 2 mins, check that the reaction is on the right message
             reaction, _ = await self.bot.wait_for('reaction_add', check=check_msg, timeout=120)
         except asyncio.TimeoutError:
-            await history_msg.clear_reaction('1️⃣')
-            await history_msg.clear_reaction('2️⃣')
-            await history_msg.clear_reaction('3️⃣')
-            await history_msg.clear_reaction('4️⃣')
-            await history_msg.clear_reaction('5️⃣')
-            await history_msg.clear_reaction('6️⃣')
-            await history_msg.clear_reaction('7️⃣')
-            await history_msg.clear_reaction('8️⃣')
-            await history_msg.clear_reaction('9️⃣')
-            print("TIMEOUT")
+            embed = history_msg.embeds[0].remove_footer()
+            await history_msg.edit(embed=embed)
+            print("Timeout in waiting for match history interaction")
+            return
         else:
             if str(reaction.emoji) in reactions_list:
                 j = reactions_list.index(str(reaction.emoji))
