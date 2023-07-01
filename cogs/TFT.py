@@ -203,6 +203,38 @@ class TFT(commands.Cog):
 
             await ctx.channel.send(embed=embed_msg)
 
+    @commands.hybrid_command()
+    @commands.check(checks.check_if_bot)
+    async def table(self, ctx, table_type=None):
+        """Return Set 9 tables for piltover (trait) cash out, spoils of war (augment) drop table, golden egg (augment) cash out."""
+        error_embed_template = discord.Embed(
+                color=discord.Colour.red()
+            )
+        error_msg = "The correct format is: **//table <type>**\nSupported tables types supported are \"piltover\", \"spoilsofwar\", and \"goldenegg\"."
+
+        if table_type is None:
+            error_embed_template.add_field(name="Table type not provided!", value=error_msg)
+            await ctx.channel.send(embed=error_embed_template)
+            return
+        elif table_type == "piltover":
+            url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
+            path = "./set-info/set9-external-resources/Piltover_table.png"
+        elif table_type == "spoils" or table_type == "spoilsofwar":
+            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
+            path = "./set-info/set9-external-resources/Spoils_of_war.png"
+        elif table_type == "goldenegg" or table_type == "egg" or table_type == "goldegg":
+            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
+            path = "./set-info/set9-external-resources/Golden_egg.png"
+        else:
+            error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
+            await ctx.channel.send(embed=error_embed_template)
+            return
+
+        with open(path, "rb") as f:
+            await ctx.channel.send(content=url, file=discord.File(f))
+            return
+
+
     def get_player_puuid(self, summoner_name, region_route):
         """
         Get player puuid.
@@ -528,38 +560,7 @@ class TFT(commands.Cog):
         return embed_msg
 
 
-    @commands.hybrid_command()
-    @commands.check(checks.check_if_bot)
-    async def table(self, ctx, table_type=None):
-        """
-        Return Set 9 tables for piltover (trait) cash out, spoils of war (augment) drop table, golden egg (augment) cash out.
-        Accepted input types are 'piltover', 'spoilsofwar' / 'spoils', 'goldenegg' / 'egg' / 'goldegg'
-        """
-        error_embed_template = discord.Embed(
-                color=discord.Colour.red()
-            )
-        error_msg = "The correct format is: **//table <type>**\nSupported tables types supported are \"piltover\", \"spoilsofwar\", and \"goldenegg\"."
 
-        if table_type == None:
-            error_embed_template.add_field(name="Table type not provided!", value=error_msg)
-            await ctx.channel.send(embed=error_embed_template)
-            return
-        elif table_type == "piltover":
-            url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
-            path = "./set-info/set9-external-resources/Piltover_table.png"
-        elif table_type == "spoils" or table_type == "spoilsofwar":
-            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
-            path = "./set-info/set9-external-resources/Spoils_of_war.png"
-        elif table_type == "goldenegg" or table_type == "egg" or table_type == "goldegg":
-            url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
-            path = "./set-info/set9-external-resources/Golden_egg.png"
-        else:
-            error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
-            await ctx.channel.send(embed=error_embed_template)
-            return
-
-        with open(path, "rb") as f:
-            await ctx.channel.send(content=url, file=discord.File(f))
 
 
 async def setup(bot):
