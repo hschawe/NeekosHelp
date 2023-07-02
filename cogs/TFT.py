@@ -39,7 +39,7 @@ class TFT(commands.Cog):
             colour=discord.Colour.green()
         )
         embed_msg.add_field(name="Region Codes", value=msg)
-        await ctx.channel.send(embed=embed_msg)
+        await ctx.reply(embed=embed_msg)
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -56,7 +56,7 @@ class TFT(commands.Cog):
                 name="Incorrect command format!", value=info_msg)
         else:
             embed_msg = self.get_player_tft_rank(region_code, summoner)
-        await ctx.channel.send(embed=embed_msg)
+        await ctx.reply(embed=embed_msg)
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -76,15 +76,15 @@ class TFT(commands.Cog):
         if (region_code is None) or (summoner is None):
             error_embed_template.add_field(
                 name="Incorrect command format!", value=improper_format_msg)
-            await ctx.channel.send(embed=error_embed_template)
+            await ctx.reply(embed=error_embed_template)
             return
         elif region_code.upper() not in decoder.region.keys():
             error_embed_template.add_field(
                 name="Incorrect region code used!", value=improper_format_msg)
-            await ctx.channel.send(embed=error_embed_template)
+            await ctx.reply(embed=error_embed_template)
             return
         else:
-            placeholder_msg = await ctx.channel.send("processing match history, please wait...")
+            placeholder_msg = await ctx.reply("processing match history, please wait...")
 
             region_route = decoder.region[region_code.upper()]
             if region_route in ["br1", "la1", "la2", "na1"]:
@@ -147,7 +147,7 @@ class TFT(commands.Cog):
             )
             embed_msg.add_field(
                 name="Incorrect command format!", value=info_msg)
-            await ctx.channel.send(embed=embed_msg)
+            await ctx.reply(embed=embed_msg)
         else:
             # Get correct region routing for API calls
             try:
@@ -160,7 +160,7 @@ class TFT(commands.Cog):
                 Use //regions to see list of correct region codes."
                 embed_msg.add_field(
                     name="Incorrect region code used!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
+                await ctx.reply(embed=embed_msg)
 
             if region_route in ["br1", "la1", "la2", "na1"]:
                 host = "americas"
@@ -184,7 +184,7 @@ class TFT(commands.Cog):
                     msg = f"Status code: {puuid}"
                     embed_msg.add_field(
                         name="Riot API unresponsive!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
+                await ctx.reply(embed=embed_msg)
 
             match_ids = self.get_match_ids(puuid, region_route, 1)
 
@@ -193,7 +193,7 @@ class TFT(commands.Cog):
             except IndexError:
                 msg = f"No recent matches found for {summoner}."
                 embed_msg.add_field(name="No recent matches found!", value=msg)
-                await ctx.channel.send(embed=embed_msg)
+                await ctx.reply(embed=embed_msg)
 
             # Get the recent match data
             match_data, queue = self.get_tft_match_data(matchID, puuid, host)
@@ -201,7 +201,7 @@ class TFT(commands.Cog):
             # Print the recent match data
             embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
 
-            await ctx.channel.send(embed=embed_msg)
+            await ctx.reply(embed=embed_msg)
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -214,7 +214,7 @@ class TFT(commands.Cog):
 
         if table_type is None:
             error_embed_template.add_field(name="Table type not provided!", value=error_msg)
-            await ctx.channel.send(embed=error_embed_template)
+            await ctx.reply(embed=error_embed_template)
             return
         elif table_type == "piltover":
             url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
@@ -227,11 +227,11 @@ class TFT(commands.Cog):
             path = "./set-info/set9-external-resources/Golden_egg.png"
         else:
             error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
-            await ctx.channel.send(embed=error_embed_template)
+            await ctx.reply(embed=error_embed_template)
             return
 
         with open(path, "rb") as f:
-            await ctx.channel.send(content=url, file=discord.File(f))
+            await ctx.reply(content=url, file=discord.File(f))
             return
 
 
@@ -473,7 +473,7 @@ class TFT(commands.Cog):
                     numb = '3rd'
                 embed_msg.title = f"{numb} most recent match for {summoner}"
 
-                await ctx.channel.send(embed=embed_msg)
+                await ctx.reply(embed=embed_msg)
 
                 # Run again so we can handle multiple reactions
                 # Remove this reaction from the list, so we don't return this match again

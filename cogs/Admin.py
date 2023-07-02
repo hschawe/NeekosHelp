@@ -16,7 +16,7 @@ class Admin(commands.Cog):
         # get your discord user ID
         disc_userid = ctx.author.id
         mention = ctx.author.mention
-        await ctx.channel.send(f"Your ID is {disc_userid}, {mention}!")
+        await ctx.reply(f"Your ID is {disc_userid}, {mention}!")
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -39,7 +39,7 @@ class Admin(commands.Cog):
             description="Slash commands have been globally synchronized.",
             color=0x9C84EF,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
@@ -58,7 +58,7 @@ class Admin(commands.Cog):
             description=f"Slash commands have been synchronized to the test discord (guild ID = 703660440374476811).\n Synced: {cmds_strs}",
             color=0x9C84EF,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
 
 

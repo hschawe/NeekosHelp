@@ -35,7 +35,7 @@ class Basic(commands.Cog):
         embed_msg.add_field(name="Need more help?",
                             value=support_server, inline=False)
 
-        await(ctx.channel.send(embed=embed_msg))
+        await(ctx.reply(embed=embed_msg))
 
 
 async def setup(bot):
