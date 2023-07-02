@@ -43,7 +43,7 @@ class TFT(commands.Cog):
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
-    async def tftrank(self, ctx, region_code=None, *, summoner=None):
+    async def tftrank(self, ctx, region_code: str, *, summoner: str):
         """Prints the requested players' TFT rank to Discord"""
         print(f"TFTRANK / {str(summoner)} / {str(region_code)} / {ctx.author}")
         if (region_code is None) or (summoner is None):
@@ -60,7 +60,7 @@ class TFT(commands.Cog):
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
-    async def matchhistory(self, ctx, region_code=None, *, summoner=None):
+    async def matchhistory(self, ctx, region_code: str, *, summoner: str):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
 
         print(
@@ -135,7 +135,7 @@ class TFT(commands.Cog):
 
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
-    async def recentmatch(self, ctx, region_code=None, *, summoner=None):
+    async def recentmatch(self, ctx, region_code: str, *, summoner: str):
         """Prints the most recent TFT match to Discord"""
         print(
             f"RECENTMATCH / {str(summoner)} / {str(region_code)} / {ctx.author}")
@@ -203,20 +203,46 @@ class TFT(commands.Cog):
 
             await ctx.reply(embed=embed_msg)
 
-    @commands.hybrid_command()
+    @discord.app_commands.command(name="table")
+    @commands.check(checks.check_if_bot)
+    @discord.app_commands.choices(tables=[
+        discord.app_commands.Choice(name='piltover', value=1),
+        discord.app_commands.Choice(name='goldenegg', value=2),
+        discord.app_commands.Choice(name='spoilsofwar', value=3),
+    ])
+    async def table_slash(self, interaction: discord.Interaction, tables: discord.app_commands.Choice[int]):
+        """Returns the requested set 9 loot table."""
+        table_type = tables.name
+        url, path = self.get_table_from_type(table_type)
+        with open(path, "rb") as f:
+            await interaction.response.send_message(content=url, file=discord.File(f))
+        return
+    
+    @commands.command()
     @commands.check(checks.check_if_bot)
     async def table(self, ctx, table_type=None):
         """Returns the requested set 9 loot table."""
+        valid_types = ["piltover", "spoilsofwar", "goldenegg"]
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
             )
         error_msg = "The correct format is: **//table <type>**\nSupported tables types supported are \"piltover\", \"spoilsofwar\", and \"goldenegg\"."
-
+        
         if table_type is None:
             error_embed_template.add_field(name="Table type not provided!", value=error_msg)
             await ctx.reply(embed=error_embed_template)
-            return
-        elif table_type == "piltover":
+        elif table_type in valid_types:
+            url, path = self.get_table_from_type(table_type)        
+            with open(path, "rb") as f:
+                await ctx.reply(content=url, file=discord.File(f))
+        else:
+            error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
+            await ctx.reply(embed=error_embed_template)
+        return
+        
+
+    def get_table_from_type(self, table_type):
+        if table_type == "piltover":
             url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
             path = "./set-info/set9-external-resources/Piltover_table.png"
         elif table_type == "spoils" or table_type == "spoilsofwar":
@@ -225,15 +251,7 @@ class TFT(commands.Cog):
         elif table_type == "goldenegg" or table_type == "egg" or table_type == "goldegg":
             url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
             path = "./set-info/set9-external-resources/Golden_egg.png"
-        else:
-            error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
-            await ctx.reply(embed=error_embed_template)
-            return
-
-        with open(path, "rb") as f:
-            await ctx.reply(content=url, file=discord.File(f))
-            return
-
+        return url, path
 
     def get_player_puuid(self, summoner_name, region_route):
         """
