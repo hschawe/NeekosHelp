@@ -48,10 +48,9 @@ class Admin(commands.Cog):
         """Command that syncs commands only to Neeko's Help discord for slash command use"""
         print("Syncing slash commands to test discord")
         test_guild = discord.Object(id=703660440374476811)
-        ctx.bot.tree.clear_commands(guild=test_guild)
-        await ctx.bot.tree.sync(guild=test_guild)
 
-        cmds = await ctx.bot.tree.fetch_commands()
+        self.bot.tree.copy_global_to(guild=test_guild)
+        cmds = await ctx.bot.tree.sync(guild=test_guild)
         cmds_strs = str([cmd.name for cmd in cmds])
         print(cmds_strs)
 

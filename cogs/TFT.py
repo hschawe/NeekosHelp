@@ -206,7 +206,7 @@ class TFT(commands.Cog):
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def table(self, ctx, table_type=None):
-        """Return Set 9 tables for piltover (trait) cash out, spoils of war (augment) drop table, golden egg (augment) cash out."""
+        """Returns the requested set 9 loot table."""
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
             )
