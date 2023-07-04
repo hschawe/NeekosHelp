@@ -376,6 +376,10 @@ class TFT(commands.Cog):
             unit_messages.append(temp_msg)
         units_msg = ''.join(unit_messages)
 
+        # Format augments for response
+        augments = helpers.get_player_augments_from_match(match_data)
+        augment_msg = ", ".join(augments)
+
         embed_msg = discord.Embed(
             title=f"Most recent match for {summoner}.",
         )
@@ -396,6 +400,7 @@ class TFT(commands.Cog):
                     + "Level: " + str(level)
 
         embed_msg.add_field(name="Game Info", value=game_info, inline=False)
+        embed_msg.add_field(name="Augments", value=augment_msg, inline=False)
         embed_msg.add_field(name="Synergies", value=trait_msg, inline=False)
         embed_msg.add_field(name="Units", value=units_msg, inline=False)
         if placement == 1:

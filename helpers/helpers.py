@@ -30,6 +30,20 @@ def get_player_units_from_match(match_data):
     return units
 
 
+def get_player_augments_from_match(match_data):
+    """Function that transforms player augments riot api data."""
+    augments_from_api = match_data.get("augments")
+    augment_names = []
+    for augment_id in augments_from_api:
+        try:
+            augment_name = decoder.augments.get(augment_id)
+            augment_names.append(augment_name)
+        except KeyError:
+            augment_names.append(augment_id)
+            print(f"Augment ID not in augment decoder: {augment_id}")
+    return augment_names
+
+
 def get_unit_items(unit):
     """Function that serializes item data that a unit has."""
     items = {}
