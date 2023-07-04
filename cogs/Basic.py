@@ -23,6 +23,7 @@ class Basic(commands.Cog):
         msg = "\n**//recentmatch** *[region] [summoner]* - gives the most recent TFT match for the specified summoner\n\
     **//matchhistory** *[region] [summoner]* - gives a list of TFT matches for the specified summoner. Add a reaction to view detailed match info!\n\
     **//tftrank** *[region] [summoner]* - gives the summoner's tft rank\n\
+    **//table [table type]** - gives the requested loot table\n\
     **//regions** - gives a list of region codes (used in other commands)\n\
     **//ping** - returns pong!\n"
 
