@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 import requests
 import json
+import sys
 from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
@@ -239,7 +240,22 @@ class TFT(commands.Cog):
             error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
             await ctx.reply(embed=error_embed_template)
         return
-        
+
+    @commands.hybrid_command()
+    @commands.check(checks.check_if_bot)
+    async def piltoverstacks(self, ctx, stacks: int):
+        intervals = [(1,2), (3,5), (6,8), (9,12), (13,17), (18,23), (24,29), (30,36), (37,44),
+                     (45,51), (52,59), (60,74), (75,89), (90,104), (105,sys.maxsize)]
+        for interval in intervals:
+            if (stacks >= interval[0]) and (stacks <= interval[1]):
+                path = f"./set-info/set9-external-resources/piltover-stacks/piltover_stacks_{interval[0]}.png"
+                with open(path, "rb") as f:
+                    await ctx.reply(content=None, file=discord.File(f))
+                return
+        if stacks <= 0:
+            await ctx.reply("You can only cash out at 1 or more stacks!")
+        return
+
 
     def get_table_from_type(self, table_type):
         if table_type == "piltover":
