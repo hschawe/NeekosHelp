@@ -6,6 +6,7 @@ import json
 from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
+valid_table_types = ["piltover", "spoilsofwar", "goldenegg", "targonprime"]
 
 class TFT(commands.Cog):
     """Class that contains commands related to TFT game."""
@@ -205,10 +206,9 @@ class TFT(commands.Cog):
 
     @discord.app_commands.command(name="table")
     @commands.check(checks.check_if_bot)
-    @discord.app_commands.choices(tables=[
-        discord.app_commands.Choice(name='piltover', value=1),
-        discord.app_commands.Choice(name='goldenegg', value=2),
-        discord.app_commands.Choice(name='spoilsofwar', value=3),
+    @discord.app_commands.choices(tables=[discord.app_commands.Choice(
+        name=valid_table_types[i], value=i)
+        for i in range(len(valid_table_types))
     ])
     async def table_slash(self, interaction: discord.Interaction, tables: discord.app_commands.Choice[int]):
         """Returns the requested set 9 loot table."""
@@ -222,7 +222,7 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def table(self, ctx, table_type=None):
         """Returns the requested set 9 loot table."""
-        valid_types = ["piltover", "spoilsofwar", "goldenegg"]
+        valid_types = valid_table_types
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
             )
@@ -232,7 +232,7 @@ class TFT(commands.Cog):
             error_embed_template.add_field(name="Table type not provided!", value=error_msg)
             await ctx.reply(embed=error_embed_template)
         elif table_type in valid_types:
-            url, path = self.get_table_from_type(table_type)        
+            url, path = self.get_table_from_type(table_type)
             with open(path, "rb") as f:
                 await ctx.reply(content=url, file=discord.File(f))
         else:
@@ -251,6 +251,9 @@ class TFT(commands.Cog):
         elif table_type == "goldenegg" or table_type == "egg" or table_type == "goldegg":
             url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
             path = "./set-info/set9-external-resources/Golden_egg.png"
+        elif table_type == "targonprime":
+            url = None
+            path = "./set-info/set9-external-resources/Targon_prime_blessing.png"
         return url, path
 
     def get_player_puuid(self, summoner_name, region_route):
