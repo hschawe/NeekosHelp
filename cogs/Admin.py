@@ -18,7 +18,7 @@ class Admin(commands.Cog):
         mention = ctx.author.mention
         await ctx.reply(f"Your ID is {disc_userid}, {mention}!")
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def updatemessage(self, ctx, *, msg):
@@ -28,7 +28,7 @@ class Admin(commands.Cog):
             name=msg, type=discord.ActivityType.listening)
         await self.bot.change_presence(activity=activity)
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def sync(self, ctx):
@@ -41,7 +41,7 @@ class Admin(commands.Cog):
         )
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def testsync(self, ctx):
