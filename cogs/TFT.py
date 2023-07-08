@@ -1,9 +1,8 @@
 import asyncio
+import sys
 import discord
 from discord.ext import commands
 import requests
-import json
-import sys
 from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
@@ -215,9 +214,9 @@ class TFT(commands.Cog):
         """Returns the requested set 9 loot table."""
         table_type = tables.name
         if table_type == "help":
-            valid_table_string = [f"\"{table}\"" for table in valid_table_types if table != "help"]
-            error_msg = "The correct format is: **/table <type>**\n\
-            Supported tables types are {}".format(", ".join(valid_table_string))
+            string_tables = [f"\"{table}\"" for table in valid_table_types if table != "help"]
+            valid_table_string = ", ".join(string_tables)
+            error_msg = f"The correct format is: **/table <type>**\nSupported tables types are {valid_table_string}"
             embed = discord.Embed(
                 color=discord.Colour.blue()
             )
@@ -237,9 +236,9 @@ class TFT(commands.Cog):
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
             )
-        valid_table_string = [f"\"{table}\"" for table in valid_table_types if table != "help"]
-        error_msg = "The correct format is: **/table <type>**\n\
-                    Supported tables types are {}".format(", ".join(valid_table_string))
+        string_tables = [f"\"{table}\"" for table in valid_table_types if table != "help"]
+        valid_table_string = ", ".join(string_tables)
+        error_msg = f"The correct format is: **/table <type>**\nSupported tables types are {valid_table_string}"
         
         if table_type is None:
             error_embed_template.add_field(name="Table type not provided!", value=error_msg)
@@ -260,10 +259,11 @@ class TFT(commands.Cog):
     @commands.hybrid_command()
     @commands.check(checks.check_if_bot)
     async def piltoverstacks(self, ctx, stacks: int):
+        """Returns the Piltover loot table for the given number of dinosaur stacks"""
         intervals = [(1,2), (3,5), (6,8), (9,12), (13,17), (18,23), (24,29), (30,36), (37,44),
                      (45,51), (52,59), (60,74), (75,89), (90,104), (105,sys.maxsize)]
         for interval in intervals:
-            if (stacks >= interval[0]) and (stacks <= interval[1]):
+            if interval[0] <= stacks <= interval[1]:
                 path = f"./set-info/set9-external-resources/piltover-stacks/piltover_stacks_{interval[0]}.png"
                 with open(path, "rb") as f:
                     await ctx.reply(content=None, file=discord.File(f))
@@ -273,13 +273,14 @@ class TFT(commands.Cog):
         return
 
     def get_table_from_type(self, table_type):
+        """Provides the source url and image file path for the input table type"""
         if table_type == "piltover":
             url = "<https://twitter.com/Mortdog/status/1668619433949155337>"
             path = "./set-info/set9-external-resources/Piltover_table.png"
-        elif table_type == "spoils" or table_type == "spoilsofwar":
+        elif table_type in ("spoils", "spoilsofwar"):
             url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
             path = "./set-info/set9-external-resources/Spoils_of_war.png"
-        elif table_type == "goldenegg" or table_type == "egg" or table_type == "goldegg":
+        elif table_type in ("goldenegg", "egg", "goldegg"):
             url = "<https://twitter.com/Mortdog/status/1668619437065523201>"
             path = "./set-info/set9-external-resources/Golden_egg.png"
         elif table_type == "targonprime":
@@ -589,7 +590,7 @@ class TFT(commands.Cog):
             color=discord.Colour.blue()
         )
         embed_msg.title = f"Rank info for {summoner}."
-        if ranks_info is []:
+        if ranks_info == []:
             msg = f"{summoner} is Unranked."
             embed_msg.add_field(value=msg)
         else:

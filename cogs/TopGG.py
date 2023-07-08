@@ -1,8 +1,6 @@
-import discord
 import dbl
 from discord.ext import commands
 import keys
-from helpers import checks
 
 
 class TopGG(commands.Cog):
