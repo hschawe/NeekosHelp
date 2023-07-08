@@ -45,17 +45,17 @@ class Admin(commands.Cog):
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def testsync(self, ctx):
-        """Command that syncs commands only to Neeko's Help discord for slash command use"""
+        """Command that syncs commands only to one guild for testing slash commands"""
         print("Syncing slash commands to test discord")
-        test_guild = discord.Object(id=703660440374476811)
+        this_guild_id = ctx.guild.id
+        test_guild = discord.Object(id=this_guild_id)
 
         self.bot.tree.copy_global_to(guild=test_guild)
         cmds = await ctx.bot.tree.sync(guild=test_guild)
         cmds_strs = str([cmd.name for cmd in cmds])
-        print(cmds_strs)
 
         embed = discord.Embed(
-            description=f"Slash commands have been synchronized to the test discord (guild ID = 703660440374476811).\n Synced: {cmds_strs}",
+            description=f"Slash commands have been synchronized to the test discord (guild ID = {this_guild_id}).\n Synced: {cmds_strs}",
             color=0x9C84EF,
         )
         await ctx.reply(embed=embed)
