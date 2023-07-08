@@ -7,7 +7,7 @@ import sys
 from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
-valid_table_types = ["piltover", "spoilsofwar", "goldenegg", "targonprime"]
+valid_table_types = ["help", "piltover", "spoilsofwar", "goldenegg", "targonprime"]
 
 class TFT(commands.Cog):
     """Class that contains commands related to TFT game."""
@@ -214,9 +214,19 @@ class TFT(commands.Cog):
     async def table_slash(self, interaction: discord.Interaction, tables: discord.app_commands.Choice[int]):
         """Returns the requested set 9 loot table."""
         table_type = tables.name
-        url, path = self.get_table_from_type(table_type)
-        with open(path, "rb") as f:
-            await interaction.response.send_message(content=url, file=discord.File(f))
+        if table_type == "help":
+            valid_table_string = [f"\"{table}\"" for table in valid_table_types if table != "help"]
+            error_msg = "The correct format is: **/table <type>**\n\
+            Supported tables types are {}".format(", ".join(valid_table_string))
+            embed = discord.Embed(
+                color=discord.Colour.blue()
+            )
+            embed.add_field(name="How to use the table command:", value=error_msg)
+            await interaction.response.send_message(embed=embed)
+        else:
+            url, path = self.get_table_from_type(table_type)
+            with open(path, "rb") as f:
+                await interaction.response.send_message(content=url, file=discord.File(f))
         return
     
     @commands.command()
@@ -227,10 +237,16 @@ class TFT(commands.Cog):
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
             )
-        error_msg = "The correct format is: **//table <type>**\nSupported tables types supported are \"piltover\", \"spoilsofwar\", and \"goldenegg\"."
+        valid_table_string = [f"\"{table}\"" for table in valid_table_types if table != "help"]
+        error_msg = "The correct format is: **/table <type>**\n\
+                    Supported tables types are {}".format(", ".join(valid_table_string))
         
         if table_type is None:
             error_embed_template.add_field(name="Table type not provided!", value=error_msg)
+            await ctx.reply(embed=error_embed_template)
+        elif table_type == "help":
+            error_embed_template.colour = discord.Colour.blue()
+            error_embed_template.add_field(name="How to use the table command:", value=error_msg)
             await ctx.reply(embed=error_embed_template)
         elif table_type in valid_types:
             url, path = self.get_table_from_type(table_type)
@@ -255,7 +271,6 @@ class TFT(commands.Cog):
         if stacks <= 0:
             await ctx.reply("You can only cash out at 1 or more stacks!")
         return
-
 
     def get_table_from_type(self, table_type):
         if table_type == "piltover":
