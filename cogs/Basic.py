@@ -24,15 +24,20 @@ class Basic(commands.Cog):
     **//matchhistory** *[region] [summoner]* - gives a list of TFT matches for the specified summoner. Add a reaction to view detailed match info!\n\
     **//tftrank** *[region] [summoner]* - gives the summoner's tft rank\n\
     **//table** *[table type]* - gives the requested loot table\n\
+    **//piltoverstacks** *[stacks]* - gives the piltover cashout table at that number of stacks\n\
     **//regions** - gives a list of region codes (used in other commands)\n\
     **//ping** - returns pong!\n"
 
         support_server = "Join the support server to request new commands or report bugs: **https://discord.gg/n7Dtk43GpU**"
 
+        privacy_policy = "https://docs.google.com/document/d/e/2PACX-1vSQnxDFE3LC-6Oyw8bo0s2kJT21jRL4zIv66GAwhL3ARLCcTq6iPhHaInt3JM_N4qZnUyyZ202gkADv/pub"
+
         embed_msg = discord.Embed(
             colour=discord.Colour.green()
         )
         embed_msg.add_field(name="Command List", value=msg, inline=False)
+        embed_msg.add_field(name="View our Privacy Policy at",
+                            value=privacy_policy, inline=False)
         embed_msg.add_field(name="Need more help?",
                             value=support_server, inline=False)
 
