@@ -1,6 +1,10 @@
+import logging
 import dbl
 from discord.ext import commands
 import keys
+
+
+logger = logging.getLogger(__name__)
 
 
 class TopGG(commands.Cog):
@@ -18,7 +22,7 @@ class TopGG(commands.Cog):
         '''
         Uses dblpy's autopost feature to post guild count to top.gg every 30 minutes.
         '''
-        print("Server count posted successfully")
+        logger.info("Server count posted successfully")
 
 
 def setup(bot):

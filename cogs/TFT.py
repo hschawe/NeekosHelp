@@ -1,3 +1,4 @@
+import logging
 import asyncio
 import sys
 import discord
@@ -7,6 +8,8 @@ from helpers import checks, create_decoders as decoder, helpers, talkies
 import keys
 
 valid_table_types = ["help", "piltover", "spoilsofwar", "goldenegg", "targonprime"]
+logger = logging.getLogger(__name__)
+
 
 class TFT(commands.Cog):
     """Class that contains commands related to TFT game."""
@@ -46,7 +49,8 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def tftrank(self, ctx, region_code: str, *, summoner: str):
         """Prints the requested players' TFT rank to Discord"""
-        print(f"TFTRANK / {str(summoner)} / {str(region_code)} / {ctx.author}")
+        logger.info(f"Tftrank command invoked in {region_code} for {summoner}")
+
         if (region_code is None) or (summoner is None):
             info_msg = "Command format should be: //tftrank [region code] [summoner]\n Use //regions to see list " \
                        "of correct region codes. "
@@ -63,9 +67,7 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def matchhistory(self, ctx, region_code: str, *, summoner: str):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
-
-        print(
-            f"MATCHHISTORY / {str(summoner)} / {str(region_code)} / {ctx.author}")
+        logger.info(f"Matchhistory command invoked in {region_code} for {summoner}")
 
         improper_format_msg = "Command format should be: //matchhistory [region code] [summoner]\n Use //regions to see list " \
                               "of correct region codes. "
@@ -138,8 +140,8 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def recentmatch(self, ctx, region_code: str, *, summoner: str):
         """Prints the most recent TFT match to Discord"""
-        print(
-            f"RECENTMATCH / {str(summoner)} / {str(region_code)} / {ctx.author}")
+        logger.info(f"Recentmatch command invoked in {region_code} for {summoner}")
+
         if (region_code is None) or (summoner is None):
             info_msg = "Command format should be: //recentmatch [region code] [summoner]\n Use //regions to see list " \
                        "of correct region codes. "
@@ -212,6 +214,8 @@ class TFT(commands.Cog):
     ])
     async def table_slash(self, interaction: discord.Interaction, tables: discord.app_commands.Choice[int]):
         """Returns the requested set 9 loot table."""
+        logger.info("Table command (application command) invoked.")
+
         table_type = tables.name
         if table_type == "help":
             string_tables = [f"\"{table}\"" for table in valid_table_types if table != "help"]
@@ -232,6 +236,8 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def table(self, ctx, table_type=None):
         """Returns the requested set 9 loot table."""
+        logger.info(f"Table command (double-slash command) invoked with {table_type}.")
+
         valid_types = valid_table_types
         error_embed_template = discord.Embed(
                 color=discord.Colour.red()
@@ -260,6 +266,8 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def piltoverstacks(self, ctx, stacks: int):
         """Returns the Piltover loot table for the given number of dinosaur stacks"""
+        logger.info(f"Piltoverstacks command invoked with stacks={stacks}")
+
         intervals = [(1,2), (3,5), (6,8), (9,12), (13,17), (18,23), (24,29), (30,36), (37,44),
                      (45,51), (52,59), (60,74), (75,89), (90,104), (105,sys.maxsize)]
         for interval in intervals:
@@ -338,8 +346,7 @@ class TFT(commands.Cog):
         # did the request succeed?
         riot_api_status_code = match_ids.status_code
         if riot_api_status_code != 200:
-            errorcode = riot_api_status_code
-            print('Riot API not reached, status code:', errorcode)
+            logger.warning(f'Riot API not reached, status code: {riot_api_status_code}')
 
         # make the recent match ID result usable
         match_ids = match_ids.json()
@@ -357,7 +364,7 @@ class TFT(commands.Cog):
         # did the request succeed?
         riot_api_status = match_data.status_code
         if riot_api_status != 200:
-            print('Riot API not reached, status code:', riot_api_status)
+            logger.warning(f'Riot API not reached, status code: {riot_api_status}')
             return riot_api_status, None
 
         # convert match data to useable format
@@ -468,7 +475,7 @@ class TFT(commands.Cog):
             # did the request succeed?
             if match_data is int:
                 if match_data != 200:
-                    print(f'Riot API not reached, status code: {match_data}')
+                    logger.warning(f'Riot API not reached, status code: {match_data}')
 
             msg = self.get_match_simple_msg(match_data, queue, puuid)
             match_data_cached = {"match_data": match_data, "queue": queue}
@@ -507,11 +514,12 @@ class TFT(commands.Cog):
 
         try:
             # Wait for reactions for 2 mins, check that the reaction is on the right message
+            logger.info(f"Waiting for match history interaction for {summoner}")
             reaction, _ = await self.bot.wait_for('reaction_add', check=check_msg, timeout=120)
         except asyncio.TimeoutError:
             embed = history_msg.embeds[0].remove_footer()
             await history_msg.edit(embed=embed)
-            print("Timeout in waiting for match history interaction")
+            logger.info(f"Timeout in waiting for match history interaction for summoner: {summoner}")
             return
         else:
             if str(reaction.emoji) in reactions_list:

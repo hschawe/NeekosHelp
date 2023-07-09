@@ -1,6 +1,10 @@
+import logging
 import discord
 from discord.ext import commands
 from helpers import checks
+
+
+logger = logging.getLogger(__name__)
 
 
 class Admin(commands.Cog):
@@ -23,7 +27,7 @@ class Admin(commands.Cog):
     @commands.check(checks.check_if_owner)
     async def updatemessage(self, ctx, *, msg):
         """Command that updates bots status message"""
-        print("Changing status to", msg)
+        logger.info(f"Changing the bot's status to {msg}")
         activity = discord.Activity(
             name=msg, type=discord.ActivityType.listening)
         await self.bot.change_presence(activity=activity)
@@ -33,7 +37,7 @@ class Admin(commands.Cog):
     @commands.check(checks.check_if_owner)
     async def sync(self, ctx):
         """Command that syncs commands globally for slash command use"""
-        print("Syncing slash commands globally")
+        logger.info("Syncing slash commands globally")
         await ctx.bot.tree.sync()
         embed = discord.Embed(
             description="Slash commands have been globally synchronized.",
@@ -46,7 +50,7 @@ class Admin(commands.Cog):
     @commands.check(checks.check_if_owner)
     async def testsync(self, ctx):
         """Command that syncs commands only to one guild for testing slash commands"""
-        print("Syncing slash commands to test discord")
+        logger.info("Syncing slash commands to test discord")
         this_guild_id = ctx.guild.id
         test_guild = discord.Object(id=this_guild_id)
 
