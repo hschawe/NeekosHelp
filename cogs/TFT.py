@@ -590,9 +590,9 @@ class TFT(commands.Cog):
             color=discord.Colour.blue()
         )
         embed_msg.title = f"Rank info for {summoner}."
-        if ranks_info == []:
-            msg = f"{summoner} is Unranked."
-            embed_msg.add_field(value=msg)
+
+        if len(ranks_info) == 0:
+            embed_msg.description = f"{summoner} is Unranked."
         else:
             for rank_info in ranks_info:
                 queue = rank_info["queueType"]
