@@ -1,4 +1,9 @@
+import logging
+import discord
 from helpers import create_decoders as decoder
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_player_traits_from_match(match_data):
@@ -52,3 +57,15 @@ def get_unit_items(unit):
             "name": decoder.items[item]
         }
     return items
+
+
+async def sync_to_guild(bot, guild_id):
+    """Syncs commands only to one guild for testing slash commands"""
+    test_guild = discord.Object(id=guild_id)
+
+    bot.tree.copy_global_to(guild=test_guild)
+    cmds = await bot.tree.sync(guild=test_guild)
+    cmds_strs = str([cmd.name for cmd in cmds])
+    logger.info(f"Slash commands have been synchronized to the test discord (guild ID = {guild_id}).")
+    logger.info(f"Synced commands: {cmds_strs}.")
+    return

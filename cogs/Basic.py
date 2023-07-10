@@ -30,7 +30,7 @@ class Basic(commands.Cog):
 
         support_server = "Join the support server to request new commands or report bugs: **https://discord.gg/n7Dtk43GpU**"
 
-        privacy_policy = "https://docs.google.com/document/d/e/2PACX-1vSQnxDFE3LC-6Oyw8bo0s2kJT21jRL4zIv66GAwhL3ARLCcTq6iPhHaInt3JM_N4qZnUyyZ202gkADv/pub"
+        privacy_policy = "https://neekos.help/privacy"
 
         embed_msg = discord.Embed(
             colour=discord.Colour.green()
