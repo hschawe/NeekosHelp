@@ -85,7 +85,7 @@ class TFT(commands.Cog):
             await ctx.reply(embed=error_embed_template)
             return
         else:
-            placeholder_msg = await ctx.reply("processing match history, please wait...")
+            placeholder_msg = await ctx.reply(f"Neeko goes on an adventure to find {summoner}'s past battles...")
 
             region_route = decoder.region[region_code.upper()]
             if region_route in ["br1", "la1", "la2", "na1"]:
