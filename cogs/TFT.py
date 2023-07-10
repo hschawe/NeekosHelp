@@ -87,7 +87,7 @@ class TFT(commands.Cog):
             await ctx.reply(embed=error_embed_template)
             return
         else:
-            placeholder_msg = await ctx.reply("processing match history, please wait...")
+            placeholder_msg = await ctx.reply(f"Neeko goes on an adventure to find {summoner}'s past battles...")
 
             region_route = decoder.region[region_code.upper()]
             if region_route in ["br1", "la1", "la2", "na1"]:
@@ -598,9 +598,9 @@ class TFT(commands.Cog):
             color=discord.Colour.blue()
         )
         embed_msg.title = f"Rank info for {summoner}."
-        if ranks_info == []:
-            msg = f"{summoner} is Unranked."
-            embed_msg.add_field(value=msg)
+
+        if len(ranks_info) == 0:
+            embed_msg.description = f"{summoner} is Unranked."
         else:
             for rank_info in ranks_info:
                 queue = rank_info["queueType"]
