@@ -18,8 +18,8 @@ def create_item(f):
     """Function that reads item dragon data json file and turns it into a usable dict."""
     temp = {}
     with open(f) as items_file:
-        items = json.load(items_file)  # List of dictionaries
-        for key, item in items["data"].items():
+        game_items = json.load(items_file)  # List of dictionaries
+        for key, item in game_items["data"].items():
             temp[item["id"]] = item["name"]
     return temp
 
@@ -43,11 +43,22 @@ def create_champion(f):
         names = json.load(names_file)  # List of dictionaries
         for name in names['data']:
             champ_name = names['data'][name]["name"]
-            id = names['data'][name]["id"].lower()
-            temp[id] = champ_name
+            champ_id = names['data'][name]["id"].lower()
+            temp[champ_id] = champ_name
     return temp
 
+def create_augment(f):
+    """Function that reads augments dragon data json file and turns it into a usable dict."""
+    temp = {}
+    with open(f) as augments_file:
+        game_augments = json.load(augments_file)
+        for augment in game_augments["data"]:
+            augment_name = game_augments["data"][augment]["name"]
+            augment_id = game_augments["data"][augment]["id"]
+            temp[augment_id] = augment_name
+    return temp
 
 items = create_item(os.path.join(SET_INFO_DIR, "tft-item.json"))
 traits = create_synergy(os.path.join(SET_INFO_DIR, "tft-trait.json"))
 units = create_champion(os.path.join(SET_INFO_DIR, "tft-champion.json"))
+augments = create_augment(os.path.join(SET_INFO_DIR, "tft-augments.json"))

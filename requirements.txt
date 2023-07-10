@@ -2,3 +2,4 @@ requests
 discord
 dblpy
 python-dotenv
+pylint

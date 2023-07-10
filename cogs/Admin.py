@@ -16,9 +16,9 @@ class Admin(commands.Cog):
         # get your discord user ID
         disc_userid = ctx.author.id
         mention = ctx.author.mention
-        await ctx.channel.send(f"Your ID is {disc_userid}, {mention}!")
+        await ctx.reply(f"Your ID is {disc_userid}, {mention}!")
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def updatemessage(self, ctx, *, msg):
@@ -28,18 +28,38 @@ class Admin(commands.Cog):
             name=msg, type=discord.ActivityType.listening)
         await self.bot.change_presence(activity=activity)
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.check(checks.check_if_bot)
     @commands.check(checks.check_if_owner)
     async def sync(self, ctx):
-        """Command that syncs commands for slash command use"""
-        print("Syncing")
+        """Command that syncs commands globally for slash command use"""
+        print("Syncing slash commands globally")
         await ctx.bot.tree.sync()
         embed = discord.Embed(
             description="Slash commands have been globally synchronized.",
             color=0x9C84EF,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
+
+    @commands.command()
+    @commands.check(checks.check_if_bot)
+    @commands.check(checks.check_if_owner)
+    async def testsync(self, ctx):
+        """Command that syncs commands only to one guild for testing slash commands"""
+        print("Syncing slash commands to test discord")
+        this_guild_id = ctx.guild.id
+        test_guild = discord.Object(id=this_guild_id)
+
+        self.bot.tree.copy_global_to(guild=test_guild)
+        cmds = await ctx.bot.tree.sync(guild=test_guild)
+        cmds_strs = str([cmd.name for cmd in cmds])
+
+        embed = discord.Embed(
+            description=f"Slash commands have been synchronized to the test discord (guild ID = {this_guild_id}).\n Synced: {cmds_strs}",
+            color=0x9C84EF,
+        )
+        await ctx.reply(embed=embed)
+
 
 
 async def setup(bot):
