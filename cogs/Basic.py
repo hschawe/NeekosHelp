@@ -16,9 +16,9 @@ class Basic(commands.Cog):
         """Command that returns pong!"""
         await interaction.response.send_message('pong!')
 
-    @app_commands.command(name="helpmeneeko")
+    @app_commands.command(name="help")
     @commands.check(checks.check_if_bot)
-    async def helpmeneeko(self, interaction: discord.Interaction):
+    async def help(self, interaction: discord.Interaction):
         """Command that returns help message."""
         msg = "\n**/recentmatch** *[region] [summoner]* - gives the most recent TFT match for the specified summoner\n\
     **/matchhistory** *[region] [summoner]* - gives a list of TFT matches for the specified summoner. Add a reaction to view detailed match info!\n\

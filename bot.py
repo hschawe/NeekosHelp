@@ -16,8 +16,9 @@ owner_id = keys.owner_id
 test_guild_id = keys.guild_id
 intents = discord.Intents.default()
 
-# Run the Discord bot and add cogs
+# Setup the bot object, remove default help command (it is replaced in Basic cog)
 bot = commands.Bot(command_prefix='//', intents=intents, owner_id=169930632632336384)
+bot.remove_command("help")
 
 @bot.event
 async def on_ready():
@@ -39,7 +40,7 @@ async def on_ready():
 
     # Set the Bot's status message (Listening to //help)
     activity = discord.Activity(
-        name='/helpmeneeko', type=discord.ActivityType.listening)
+        name='/help', type=discord.ActivityType.listening)
     await bot.change_presence(activity=activity)
 
 bot.run(discord_bot_key)
