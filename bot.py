@@ -39,7 +39,7 @@ async def on_ready():
 
     # Set the Bot's status message (Listening to //help)
     activity = discord.Activity(
-        name='//helpmeneeko', type=discord.ActivityType.listening)
+        name='/helpmeneeko', type=discord.ActivityType.listening)
     await bot.change_presence(activity=activity)
 
 bot.run(discord_bot_key)

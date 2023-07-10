@@ -2,6 +2,7 @@ import logging
 import asyncio
 import sys
 import discord
+from discord import app_commands
 from discord.ext import commands
 import requests
 from helpers import checks, create_decoders as decoder, helpers, talkies
@@ -18,9 +19,9 @@ class TFT(commands.Cog):
         self.bot = bot
         self.headers = keys.headers
 
-    @commands.hybrid_command()
+    @app_commands.command(name="regions")
     @commands.check(checks.check_if_bot)
-    async def regions(self, ctx):
+    async def regions(self, interaction: discord.Interaction):
         """Print bot's accepted region codes to Discord"""
         msg = "**NA**: North America\n\
         **EUW**: West Europe\n\
@@ -43,16 +44,16 @@ class TFT(commands.Cog):
             colour=discord.Colour.green()
         )
         embed_msg.add_field(name="Region Codes", value=msg)
-        await ctx.reply(embed=embed_msg)
+        await interaction.response.send_message(embed=embed_msg)
 
-    @commands.hybrid_command()
+    @app_commands.command(name="tftrank")
     @commands.check(checks.check_if_bot)
-    async def tftrank(self, ctx, region_code: str, *, summoner: str):
+    async def tftrank(self, interaction: discord.Interaction, region_code: str, *, summoner: str):
         """Prints the requested players' TFT rank to Discord"""
         logger.info(f"Tftrank command invoked in {region_code} for {summoner}")
 
         if (region_code is None) or (summoner is None):
-            info_msg = "Command format should be: //tftrank [region code] [summoner]\n Use //regions to see list " \
+            info_msg = "Command format should be: /tftrank [region code] [summoner]\n Use /regions to see list " \
                        "of correct region codes. "
             embed_msg = discord.Embed(
                 colour=discord.Colour.red()
@@ -61,15 +62,15 @@ class TFT(commands.Cog):
                 name="Incorrect command format!", value=info_msg)
         else:
             embed_msg = self.get_player_tft_rank(region_code, summoner)
-        await ctx.reply(embed=embed_msg)
+        await interaction.response.send_message(embed=embed_msg)
 
-    @commands.hybrid_command()
+    @app_commands.command(name="matchhistory")
     @commands.check(checks.check_if_bot)
-    async def matchhistory(self, ctx, region_code: str, *, summoner: str):
+    async def matchhistory(self, interaction: discord.Interaction, region_code: str, *, summoner: str):
         """Prints the requested player's TFT match history (prev. 9 games) to Discord"""
         logger.info(f"Matchhistory command invoked in {region_code} for {summoner}")
 
-        improper_format_msg = "Command format should be: //matchhistory [region code] [summoner]\n Use //regions to see list " \
+        improper_format_msg = "Command format should be: /matchhistory [region code] [summoner]\n Use /regions to see list " \
                               "of correct region codes. "
 
         error_embed_template = discord.Embed(
@@ -79,15 +80,15 @@ class TFT(commands.Cog):
         if (region_code is None) or (summoner is None):
             error_embed_template.add_field(
                 name="Incorrect command format!", value=improper_format_msg)
-            await ctx.reply(embed=error_embed_template)
+            await interaction.response.send_message(embed=error_embed_template)
             return
         elif region_code.upper() not in decoder.region.keys():
             error_embed_template.add_field(
                 name="Incorrect region code used!", value=improper_format_msg)
-            await ctx.reply(embed=error_embed_template)
+            await interaction.response.send_message(embed=error_embed_template)
             return
         else:
-            placeholder_msg = await ctx.reply(f"Neeko goes on an adventure to find {summoner}'s past battles...")
+            await interaction.response.send_message(f"Neeko goes on an adventure to find {summoner}'s past battles...")
 
             region_route = decoder.region[region_code.upper()]
             if region_route in ["br1", "la1", "la2", "na1"]:
@@ -110,7 +111,7 @@ class TFT(commands.Cog):
                     msg = f"Status code: {puuid}"
                     error_embed_template.add_field(
                         name="Riot API unresponsive!", value=msg)
-                await placeholder_msg.edit(content=None, embed=error_embed_template)
+                await interaction.edit_original_response(content=None, embed=error_embed_template)
                 return
 
             match_ids = self.get_match_ids(puuid, region_route, 9)
@@ -121,36 +122,36 @@ class TFT(commands.Cog):
             except IndexError:
                 msg = f"No recent matches found for {summoner}."
                 error_embed_template.add_field(name="No recent matches found!", value=msg)
-                await placeholder_msg.edit(content=None, embed=error_embed_template)
+                await interaction.edit_original_response(content=None, embed=error_embed_template)
                 return
 
             embed_msg, match_data_cache = self.get_matchhistory_embed(
                 match_ids, summoner, puuid, host)
 
             # Add more detail to the embed message
-            if ctx.author.avatar is not None:
-                embed_msg.set_author(name=ctx.author.name,
-                                     icon_url=ctx.author.avatar)
+            if interaction.user.display_avatar is not None:
+                embed_msg.set_author(name=interaction.user.name,
+                                     icon_url=interaction.user.display_avatar.url)
 
             # Send the message and add the numbered emojis as reactions
-            history_msg = await placeholder_msg.edit(content=None, embed=embed_msg)
-            await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner)
+            history_msg = await interaction.edit_original_response(content=None, embed=embed_msg)
+            await self.wait_for_interaction(interaction, history_msg, match_data_cache, summoner)
 
-    @commands.hybrid_command()
+    @app_commands.command(name="recentmatch")
     @commands.check(checks.check_if_bot)
-    async def recentmatch(self, ctx, region_code: str, *, summoner: str):
+    async def recentmatch(self, interaction: discord.Interaction, region_code: str, *, summoner: str):
         """Prints the most recent TFT match to Discord"""
         logger.info(f"Recentmatch command invoked in {region_code} for {summoner}")
 
         if (region_code is None) or (summoner is None):
-            info_msg = "Command format should be: //recentmatch [region code] [summoner]\n Use //regions to see list " \
+            info_msg = "Command format should be: /recentmatch [region code] [summoner]\n Use /regions to see list " \
                        "of correct region codes. "
             embed_msg = discord.Embed(
                 colour=discord.Colour.red()
             )
             embed_msg.add_field(
                 name="Incorrect command format!", value=info_msg)
-            await ctx.reply(embed=embed_msg)
+            await interaction.response.send_message(embed=embed_msg)
         else:
             # Get correct region routing for API calls
             try:
@@ -159,11 +160,12 @@ class TFT(commands.Cog):
                 embed_msg = discord.Embed(
                     color=discord.Colour.red()
                 )
-                msg = "Command format should be: //matchhistory [region code] [summoner] \n\
-                Use //regions to see list of correct region codes."
+                msg = "Command format should be: /matchhistory [region code] [summoner] \n\
+                Use /regions to see list of correct region codes."
                 embed_msg.add_field(
                     name="Incorrect region code used!", value=msg)
-                await ctx.reply(embed=embed_msg)
+                await interaction.response.send_message(embed=embed_msg)
+                return
 
             if region_route in ["br1", "la1", "la2", "na1"]:
                 host = "americas"
@@ -187,7 +189,7 @@ class TFT(commands.Cog):
                     msg = f"Status code: {puuid}"
                     embed_msg.add_field(
                         name="Riot API unresponsive!", value=msg)
-                await ctx.reply(embed=embed_msg)
+                await interaction.response.send_message(embed=embed_msg)
 
             match_ids = self.get_match_ids(puuid, region_route, 1)
 
@@ -196,7 +198,7 @@ class TFT(commands.Cog):
             except IndexError:
                 msg = f"No recent matches found for {summoner}."
                 embed_msg.add_field(name="No recent matches found!", value=msg)
-                await ctx.reply(embed=embed_msg)
+                await interaction.response.send_message(embed=embed_msg)
 
             # Get the recent match data
             match_data, queue = self.get_tft_match_data(matchID, puuid, host)
@@ -204,7 +206,7 @@ class TFT(commands.Cog):
             # Print the recent match data
             embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
 
-            await ctx.reply(embed=embed_msg)
+            await interaction.response.send_message(embed=embed_msg)
 
     @discord.app_commands.command(name="table")
     @commands.check(checks.check_if_bot)
@@ -231,40 +233,10 @@ class TFT(commands.Cog):
             with open(path, "rb") as f:
                 await interaction.response.send_message(content=url, file=discord.File(f))
         return
-    
-    @commands.command()
-    @commands.check(checks.check_if_bot)
-    async def table(self, ctx, table_type=None):
-        """Returns the requested set 9 loot table."""
-        logger.info(f"Table command (double-slash command) invoked with {table_type}.")
 
-        valid_types = valid_table_types
-        error_embed_template = discord.Embed(
-                color=discord.Colour.red()
-            )
-        string_tables = [f"\"{table}\"" for table in valid_table_types if table != "help"]
-        valid_table_string = ", ".join(string_tables)
-        error_msg = f"The correct format is: **/table <type>**\nSupported tables types are {valid_table_string}"
-        
-        if table_type is None:
-            error_embed_template.add_field(name="Table type not provided!", value=error_msg)
-            await ctx.reply(embed=error_embed_template)
-        elif table_type == "help":
-            error_embed_template.colour = discord.Colour.blue()
-            error_embed_template.add_field(name="How to use the table command:", value=error_msg)
-            await ctx.reply(embed=error_embed_template)
-        elif table_type in valid_types:
-            url, path = self.get_table_from_type(table_type)
-            with open(path, "rb") as f:
-                await ctx.reply(content=url, file=discord.File(f))
-        else:
-            error_embed_template.add_field(name="Wrong table type provided!", value=error_msg)
-            await ctx.reply(embed=error_embed_template)
-        return
-
-    @commands.hybrid_command()
+    @app_commands.command(name="piltoverstacks")
     @commands.check(checks.check_if_bot)
-    async def piltoverstacks(self, ctx, stacks: int):
+    async def piltoverstacks(self, interaction: discord.Interaction, stacks: int):
         """Returns the Piltover loot table for the given number of dinosaur stacks"""
         logger.info(f"Piltoverstacks command invoked with stacks={stacks}")
 
@@ -274,10 +246,10 @@ class TFT(commands.Cog):
             if interval[0] <= stacks <= interval[1]:
                 path = f"./set-info/set9-external-resources/piltover-stacks/piltover_stacks_{interval[0]}.png"
                 with open(path, "rb") as f:
-                    await ctx.reply(content=None, file=discord.File(f))
+                    await interaction.response.send_message(content=None, file=discord.File(f))
                 return
         if stacks <= 0:
-            await ctx.reply("You can only cash out at 1 or more stacks!")
+            await interaction.response.send_message("You can only cash out at 1 or more stacks!")
         return
 
     def get_table_from_type(self, table_type):
@@ -507,10 +479,10 @@ class TFT(commands.Cog):
 
         return msg
 
-    async def wait_for_interaction(self, ctx, history_msg, match_data_cache, summoner, reactions_list=['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']):
+    async def wait_for_interaction(self, interaction, history_msg, match_data_cache, summoner, reactions_list=['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣']):
         """Waits for an emoji interaction from a command."""
         def check_msg(reaction, user):
-            return reaction.message.id == history_msg.id and user == ctx.author
+            return reaction.message.id == history_msg.id and user == interaction.user
 
         try:
             # Wait for reactions for 2 mins, check that the reaction is on the right message
@@ -539,12 +511,12 @@ class TFT(commands.Cog):
                     numb = '3rd'
                 embed_msg.title = f"{numb} most recent match for {summoner}"
 
-                await ctx.reply(embed=embed_msg)
+                await interaction.followup.send(embed=embed_msg)
 
                 # Run again so we can handle multiple reactions
                 # Remove this reaction from the list, so we don't return this match again
                 reactions_list[j] = None
-            await self.wait_for_interaction(ctx, history_msg, match_data_cache, summoner, reactions_list)
+            await self.wait_for_interaction(interaction, history_msg, match_data_cache, summoner, reactions_list)
 
     def get_player_tft_rank(self, region_code, summoner):
         """Returns the summoner's TFT rank as a Discord.py Embed object"""
@@ -555,8 +527,8 @@ class TFT(commands.Cog):
             embed_msg = discord.Embed(
                 color=discord.Colour.red()
             )
-            msg = "Command format should be: //tftrank [region code] [summoner] \n\
-        Use //regions to see list of correct region codes."
+            msg = "Command format should be: /tftrank [region code] [summoner] \n\
+        Use /regions to see list of correct region codes."
             embed_msg.add_field(
                 name="Region code used incorrectly!", value=msg)
             return embed_msg
@@ -624,9 +596,6 @@ class TFT(commands.Cog):
                     embed_msg.add_field(
                         name="HyperRoll", value=rank_msg, inline=False)
         return embed_msg
-
-
-
 
 
 async def setup(bot):
