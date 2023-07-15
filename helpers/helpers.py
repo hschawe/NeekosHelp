@@ -52,3 +52,10 @@ def get_unit_items(unit):
             "name": decoder.items[item]
         }
     return items
+
+
+def get_true_placement(queue, placement):
+    """Function that takes queue type into consideration and evaluates actual placement."""
+    if queue == 'Double Up':
+        placement = (placement + 1) // 2
+    return placement

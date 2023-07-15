@@ -377,7 +377,9 @@ class TFT(commands.Cog):
 
     def get_recentmatch_embed(self, match_data, summoner, queue):
         """Creates embed message for recentmatch response."""
-        placement = match_data.get("placement")
+        api_placement = match_data.get("placement")
+        formatted_placement = helpers.get_true_placement(
+            queue, match_data.get("placement"))
         level = match_data.get("level")
 
         # Format traits for response
@@ -419,29 +421,29 @@ class TFT(commands.Cog):
             title=f"Most recent match for {summoner}.",
         )
 
-        if placement == 1:
+        if (api_placement == 1) or (formatted_placement == 1):
             embed_msg.colour = discord.Colour.gold()
-        elif placement == 2:
+        elif (api_placement == 2) or (formatted_placement == 2):
             embed_msg.colour = discord.Colour.light_gray()
-        elif placement == 3:
+        elif api_placement == 3:
             embed_msg.colour = discord.Colour.dark_orange()
-        elif placement <= 4:
+        elif api_placement <= 4:
             embed_msg.colour = discord.Colour.dark_theme()
         else:
             embed_msg.colour = discord.Colour.red()
 
         game_info = "Game type: " + queue + "\n " \
-                    + "Placement: " + str(placement) + "\n " \
+                    + "Placement: " + str(formatted_placement) + "\n " \
                     + "Level: " + str(level)
 
         embed_msg.add_field(name="Game Info", value=game_info, inline=False)
         embed_msg.add_field(name="Augments", value=augment_msg, inline=False)
         embed_msg.add_field(name="Synergies", value=trait_msg, inline=False)
         embed_msg.add_field(name="Units", value=units_msg, inline=False)
-        if placement == 1:
+        if (api_placement == 1) or (formatted_placement == 1):
             embed_msg.add_field(name="Neeko says...",
                                 value=talkies.get_excited_line(), inline=False)
-        elif placement > 4:
+        elif api_placement > 4:
             embed_msg.add_field(name="Neeko says...",
                                 value=talkies.get_sad_line(), inline=False)
 
@@ -482,7 +484,8 @@ class TFT(commands.Cog):
 
     def get_match_simple_msg(self, match_data, queue, puuid):
         """Creates embed message for simple match response."""
-        placement = match_data.get("placement")
+        formatted_placement = helpers.get_true_placement(
+            queue, match_data.get("placement"))
 
         traits = helpers.get_player_traits_from_match(match_data)
         trait_messages = []
@@ -495,7 +498,7 @@ class TFT(commands.Cog):
         if trait_msg == "":
             trait_msg = "(No synergies found.)"
 
-        msg = '** Placement:** ' + str(placement) + '\nGame Type: ' + queue + '\nSynergies:\n ' + trait_msg \
+        msg = '** Placement:** ' + str(formatted_placement) + '\nGame Type: ' + queue + '\nSynergies:\n ' + trait_msg \
               + '\n'
 
         return msg
