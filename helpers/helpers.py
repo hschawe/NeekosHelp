@@ -61,6 +61,13 @@ def get_unit_items(unit):
     return items
 
 
+def get_true_placement(queue, placement):
+    """Function that takes queue type into consideration and evaluates actual placement."""
+    if queue == 'Double Up':
+        placement = (placement + 1) // 2
+    return placement
+
+
 async def sync_to_guild(bot, guild_id):
     """Syncs commands only to one guild for testing slash commands"""
     test_guild = discord.Object(id=guild_id)
