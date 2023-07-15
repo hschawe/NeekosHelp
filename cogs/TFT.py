@@ -377,7 +377,7 @@ class TFT(commands.Cog):
         for _, unit in units.items():
             temp_msg = "*" + unit["name"] + "* - " + \
                 (unit["tier"] * ":star:") + " | " + \
-                decoder.cost[unit["cost"]] + "\n"
+                decoder.cost.get(unit["cost"], "") + "\n"
             if len(unit["items"]) > 0:
                 items = helpers.get_unit_items(unit)
                 item_msg = '[ '
@@ -498,24 +498,44 @@ class TFT(commands.Cog):
                 j = reactions_list.index(str(reaction.emoji))
 
                 match_info = match_data_cache[j]
-                embed_msg = self.get_recentmatch_embed(
-                    match_info['match_data'], summoner, match_info['queue'])
-                numb = ''
-                if j in [3, 4, 5, 6, 7, 8]:
-                    numb = str(j + 1) + 'th'
-                elif j == 0:
-                    numb = '1st'
-                elif j == 1:
-                    numb = '2nd'
-                elif j == 2:
-                    numb = '3rd'
-                embed_msg.title = f"{numb} most recent match for {summoner}"
+                try:
+                    embed_msg = self.get_recentmatch_embed(
+                        match_info['match_data'], summoner, match_info['queue'])
+                except KeyError:
+                    logger.warning(f"KeyError encountered in wait_for_interaction for {summoner}")
+                    embed_msg = discord.Embed(
+                        colour=discord.Colour.red()
+                    )
+                    embed_msg.add_field(
+                        name="Neeko encountered an error processing the game data :(",
+                        value="The game you requested is likely from an old TFT set that isn't supported by the bot."
+                    )
+                except:
+                    logger.error(f"Unexpected error encountered in wait_for_interaction for {summoner}")
+                    embed_msg = discord.Embed(
+                        colour=discord.Colour.red()
+                    )
+                    embed_msg.add_field(
+                        name="Neeko ran into an unknown error :(",
+                        value="If this error persists, please **report a bug** in the Neeko's Help Discord server: **https://discord.gg/n7Dtk43GpU**"
+                    )
+                else:
+                    numb = ''
+                    if j in [3, 4, 5, 6, 7, 8]:
+                        numb = str(j + 1) + 'th'
+                    elif j == 0:
+                        numb = '1st'
+                    elif j == 1:
+                        numb = '2nd'
+                    elif j == 2:
+                        numb = '3rd'
+                    embed_msg.title = f"{numb} most recent match for {summoner}"
+                finally:
+                    await interaction.followup.send(embed=embed_msg)
 
-                await interaction.followup.send(embed=embed_msg)
-
-                # Run again so we can handle multiple reactions
-                # Remove this reaction from the list, so we don't return this match again
-                reactions_list[j] = None
+                    # Run again so we can handle multiple reactions
+                    # Remove this reaction from the list, so we don't return this match again
+                    reactions_list[j] = None
             await self.wait_for_interaction(interaction, history_msg, match_data_cache, summoner, reactions_list)
 
     def get_player_tft_rank(self, region_code, summoner):

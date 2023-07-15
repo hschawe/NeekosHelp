@@ -45,6 +45,7 @@ def create_champion(f):
             champ_name = names['data'][name]["name"]
             champ_id = names['data'][name]["id"].lower()
             temp[champ_id] = champ_name
+    temp['tft9_heimerdingerturret'] = 'Heimerdinger Turret'
     return temp
 
 def create_augment(f):

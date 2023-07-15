@@ -12,7 +12,8 @@ def get_player_traits_from_match(match_data):
     traits = {}
     for trait in traits_from_api:
         traits[trait['name']] = {
-            "name": decoder.traits[trait['name']],
+            # "name": decoder.traits[trait['name']],
+            "name": decoder.traits.get(trait['name'], trait['name']),
             "tier_current": trait['tier_current'],
             "tier_total": trait['tier_total'],
             "num_units": trait['num_units']
@@ -27,7 +28,7 @@ def get_player_units_from_match(match_data):
     for unit in units_from_api:
         unit_id = unit['character_id'].lower()
         units[unit_id] = {
-            "name": decoder.units.get(unit_id, 'Special Unit'),
+            "name": decoder.units.get(unit_id, unit['character_id']),
             "tier": unit.get('tier', 0),
             "cost": unit.get('rarity', 99),
             "items": unit.get('itemNames', [])
@@ -39,13 +40,14 @@ def get_player_augments_from_match(match_data):
     """Function that transforms player augments riot api data."""
     augments_from_api = match_data.get("augments")
     augment_names = []
-    for augment_id in augments_from_api:
-        try:
-            augment_name = decoder.augments.get(augment_id)
-            augment_names.append(augment_name)
-        except KeyError:
-            augment_names.append(augment_id)
-            print(f"Augment ID not in augment decoder: {augment_id}")
+    if augments_from_api is not None:
+        for augment_id in augments_from_api:
+            try:
+                augment_name = decoder.augments.get(augment_id)
+                augment_names.append(augment_name)
+            except KeyError:
+                augment_names.append(augment_id)
+                print(f"Augment ID not in augment decoder: {augment_id}")
     return augment_names
 
 
