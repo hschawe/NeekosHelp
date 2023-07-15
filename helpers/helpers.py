@@ -47,7 +47,7 @@ def get_player_augments_from_match(match_data):
                 augment_names.append(augment_name)
             except KeyError:
                 augment_names.append(augment_id)
-                print(f"Augment ID not in augment decoder: {augment_id}")
+                logger.warning(f"Augment ID not in augment decoder: {augment_id}")
     return augment_names
 
 
