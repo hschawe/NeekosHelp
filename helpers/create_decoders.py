@@ -14,52 +14,76 @@ cost = {0: '1 Cost', 1: '2 Cost', 2: '3 Cost',
         4: '4 Cost', 6: '5 Cost', 9: 'Summon', 99: ''}
 
 
-def create_item(f):
+def create_item(riot_fpath, custom_fpath):
     """Function that reads item dragon data json file and turns it into a usable dict."""
     temp = {}
-    with open(f) as items_file:
+    with open(riot_fpath) as items_file:
         game_items = json.load(items_file)  # List of dictionaries
         for key, item in game_items["data"].items():
             temp[item["id"]] = item["name"]
+
+    with open(custom_fpath) as custom_items_file:
+        custom_items = json.load(custom_items_file)
+        temp.update(custom_items)
     return temp
 
 
-def create_synergy(f):
+def create_synergy(riot_fpath, custom_fpath):
     """Function that reads traits dragon data json file and turns it into a usable dict."""
     temp = {}
-    with open(f) as synergies_file:
+    with open(riot_fpath) as synergies_file:
         synergies = json.load(synergies_file)  # List of dictionaries
         for synergy in synergies['data']:
             synergy_key = synergy
             synergy_name = synergies['data'][synergy_key]['name']
             temp[synergy_key] = synergy_name
+
+    with open(custom_fpath) as custom_traits_file:
+        custom_traits = json.load(custom_traits_file)
+        temp.update(custom_traits)
+
     return temp
 
 
-def create_champion(f):
+def create_champion(riot_fpath, custom_fpath):
     """Function that reads units dragon data json file and turns it into a usable dict."""
     temp = {}
-    with open(f) as names_file:
+    with open(riot_fpath) as names_file:
         names = json.load(names_file)  # List of dictionaries
         for name in names['data']:
             champ_name = names['data'][name]["name"]
             champ_id = names['data'][name]["id"].lower()
             temp[champ_id] = champ_name
-    temp['tft9_heimerdingerturret'] = 'Heimerdinger Turret'
+
+    with open(custom_fpath) as custom_names_file:
+        custom_names = json.load(custom_names_file)
+        temp.update(custom_names)
+
     return temp
 
-def create_augment(f):
+
+def create_augment(riot_fpath, custom_fpath):
     """Function that reads augments dragon data json file and turns it into a usable dict."""
     temp = {}
-    with open(f) as augments_file:
+    with open(riot_fpath) as augments_file:
         game_augments = json.load(augments_file)
         for augment in game_augments["data"]:
             augment_name = game_augments["data"][augment]["name"]
             augment_id = game_augments["data"][augment]["id"]
             temp[augment_id] = augment_name
+
+    with open(custom_fpath) as custom_augments_file:
+        custom_augments = json.load(custom_augments_file)
+        temp.update(custom_augments)
+
     return temp
 
-items = create_item(os.path.join(SET_INFO_DIR, "tft-item.json"))
-traits = create_synergy(os.path.join(SET_INFO_DIR, "tft-trait.json"))
-units = create_champion(os.path.join(SET_INFO_DIR, "tft-champion.json"))
-augments = create_augment(os.path.join(SET_INFO_DIR, "tft-augments.json"))
+
+items = create_item(os.path.join(SET_INFO_DIR, "tft-item.json"),
+                    os.path.join(SET_INFO_DIR, "custom_definitions/item.json"))
+traits = create_synergy(os.path.join(SET_INFO_DIR, "tft-trait.json"),
+                        os.path.join(SET_INFO_DIR, "custom_definitions/trait.json"))
+units = create_champion(os.path.join(SET_INFO_DIR, "tft-champion.json"),
+                        os.path.join(SET_INFO_DIR, "custom_definitions/champion.json"))
+augments = create_augment(os.path.join(SET_INFO_DIR, "tft-augments.json"),
+                          os.path.join(SET_INFO_DIR, "custom_definitions/augments.json"))
