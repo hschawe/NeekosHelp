@@ -21,3 +21,7 @@ topgg_token = os.getenv('TOPGG_KEY')
 #Prod or Test environment
 environment = os.getenv('ENVIRONMENT')
 
+# Bot owner, test guild Discord IDs
+owner_id = os.getenv("OWNER_ID")
+guild_id = os.getenv("GUILD_ID")
+

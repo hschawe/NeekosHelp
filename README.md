@@ -36,16 +36,19 @@ Setup a python development environment :)
 In the root directory of this project create a .env file that looks like:
 ```
 # .env
-DISCORD_TOKEN={DISCORD API KEY FROM INSTRUCTIONS BELOW}
-RIOT_TOKEN={RIOT API KEY FROM INSTRUCTIONS BELOW}
-ENVIRONMENT={SET TO "test" or "prod"}
-TOPGG_TOKEN={ONLY USED BY OFFICIAL BOT; FROM TOPGG, INSTRUCTIONS BELOW}
+OWNER_ID=0123
+GUILD_ID=4567
+DISCORD_TOKEN="DISCORD API KEY FROM INSTRUCTIONS BELOW"
+RIOT_TOKEN="RIOT API KEY FROM INSTRUCTIONS BELOW"
+ENVIRONMENT="test" or "prod"
+TOPGG_TOKEN="ONLY USED BY OFFICIAL BOT; FROM TOPGG, INSTRUCTIONS BELOW"
 ```
 
-You'll need 3 things:
+You'll need a few things:
 1. Riot TFT files
 2. a Riot API key
 3. a Discord Bot key. 
+4. your Discord ID, along with the ID of a Discord server (guild) to run the bot in
 
 (Make sure that the last 2 remain private, don't share them with anyone else!)
 
@@ -64,6 +67,10 @@ You'll need 3 things:
    * Make a New Application, then navigate to Bot on the left sidebar. Click Add Bot, then copy its Token. 
    * On the same page, scroll down from where you copied the token, turn on the "Message Content Intent" 
    * Paste token into .env file
+4. Your Discord ID and a Discord guild ID
+   * If it's not on already, turn on Developer Mode in Discord by going to Settings -> Advanced
+   * Click your icon on the bottom left, click "Copy User ID". Paste this into the OWNER_ID field in the .env file
+   * To copy the ID of the server you want to run the bot for, right click the server icon on the left sidebar, and click "Copy Server ID". Paste this as GUILD_ID in the .env file. When you start the bot, it will initially sync all its commands to only this server.
 
 You can (mostly) safely ignore the top.gg references in the code. The official bot is advertised on top.gg, it uses this to post the public Neeko's Help's server count to the site. 
 
