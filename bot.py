@@ -17,7 +17,7 @@ test_guild_id = keys.guild_id
 intents = discord.Intents.default()
 
 # Setup the bot object, remove default help command (it is replaced in Basic cog)
-bot = commands.Bot(command_prefix='//', intents=intents, owner_id=169930632632336384)
+bot = commands.Bot(command_prefix='//', intents=intents, owner_id=owner_id)
 bot.remove_command("help")
 
 @bot.event
