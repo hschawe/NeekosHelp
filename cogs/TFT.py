@@ -252,6 +252,23 @@ class TFT(commands.Cog):
             await interaction.response.send_message("You can only cash out at 1 or more stacks!")
         return
 
+
+    @app_commands.command(name="shimmerscale")
+    @commands.check(checks.check_if_bot)
+    async def shimmerscale_items(self, interaction: discord.Interaction):
+        path = f"./set-info/set9-external-resources/shimmerscale_items.png"
+        with open(path, "rb") as f:
+            await interaction.response.send_message(content=None, file=discord.File(f))
+        return
+
+
+    # @app_commands.command(name="radiant")
+    # @commands.check(checks.check_if_bot)
+    # async def radiant_items(self, interaction: discord.Interaction, item: str):
+    #     """Compares difference between radiant and non-radiant versions of an item"""
+    #     pass
+
+
     def get_table_from_type(self, table_type):
         """Provides the source url and image file path for the input table type"""
         if table_type == "piltover":
