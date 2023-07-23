@@ -256,6 +256,7 @@ class TFT(commands.Cog):
     @app_commands.command(name="shimmerscale")
     @commands.check(checks.check_if_bot)
     async def shimmerscale_items(self, interaction: discord.Interaction):
+        """Describes all of the shimmerscale items."""
         path = f"./set-info/set9-external-resources/shimmerscale_items.png"
         with open(path, "rb") as f:
             await interaction.response.send_message(content=None, file=discord.File(f))
