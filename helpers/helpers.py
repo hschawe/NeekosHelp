@@ -56,11 +56,13 @@ def get_player_augments_from_match(match_data):
 
 def get_unit_items(unit):
     """Function that serializes item data that a unit has."""
-    items = {}
+    items = []
     for item in unit["items"]:
-        items[item] = {
-            "name": decoder.items[item]
-        }
+        items.append(
+            {
+                "name": decoder.items[item]
+            }
+        )
     return items
 
 

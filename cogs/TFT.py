@@ -401,7 +401,7 @@ class TFT(commands.Cog):
             if len(unit["items"]) > 0:
                 items = helpers.get_unit_items(unit)
                 item_msg = '[ '
-                for _, item in items.items():
+                for item in items:
                     item_msg = item_msg + item["name"] + ', '
                 item_msg = item_msg.rstrip(", ")
                 temp_msg = temp_msg + item_msg + ' ]\n\n'
@@ -486,7 +486,7 @@ class TFT(commands.Cog):
 
         traits = helpers.get_player_traits_from_match(match_data)
         trait_messages = []
-        for _, trait in traits.items():
+        for trait in traits:
             if trait['tier_current'] > 0:
                 trait_messages.append(
                     str(trait['num_units']) + ' ' + trait['name'] + ', ')
@@ -532,7 +532,7 @@ class TFT(commands.Cog):
                         value="The game you requested is likely from an old TFT set that isn't supported by the bot."
                     )
                 except:
-                    logger.error(f"Unexpected error encountered in wait_for_interaction for {summoner}")
+                    logger.exception(f"Unexpected error encountered in wait_for_interaction for {summoner}")
                     embed_msg = discord.Embed(
                         colour=discord.Colour.red()
                     )
