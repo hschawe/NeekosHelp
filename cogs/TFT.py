@@ -532,7 +532,7 @@ class TFT(commands.Cog):
                         value="The game you requested is likely from an old TFT set that isn't supported by the bot."
                     )
                 except:
-                    logger.error(f"Unexpected error encountered in wait_for_interaction for {summoner}")
+                    logger.exception(f"Unexpected error encountered in wait_for_interaction for {summoner}")
                     embed_msg = discord.Embed(
                         colour=discord.Colour.red()
                     )
