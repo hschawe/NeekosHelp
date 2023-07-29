@@ -141,6 +141,7 @@ class TFT(commands.Cog):
     @commands.check(checks.check_if_bot)
     async def recentmatch(self, interaction: discord.Interaction, region_code: str, *, summoner: str):
         """Prints the most recent TFT match to Discord"""
+        await interaction.response.defer(thinking=True)
         logger.info(f"Recentmatch command invoked in {region_code} for {summoner}")
 
         if (region_code is None) or (summoner is None):
@@ -151,7 +152,7 @@ class TFT(commands.Cog):
             )
             embed_msg.add_field(
                 name="Incorrect command format!", value=info_msg)
-            await interaction.response.send_message(embed=embed_msg)
+            await interaction.followup.send(embed=embed_msg)
         else:
             # Get correct region routing for API calls
             try:
@@ -164,7 +165,7 @@ class TFT(commands.Cog):
                 Use /regions to see list of correct region codes."
                 embed_msg.add_field(
                     name="Incorrect region code used!", value=msg)
-                await interaction.response.send_message(embed=embed_msg)
+                await interaction.followup.send(embed=embed_msg)
                 return
 
             if region_route in ["br1", "la1", "la2", "na1"]:
@@ -189,7 +190,7 @@ class TFT(commands.Cog):
                     msg = f"Status code: {puuid}"
                     embed_msg.add_field(
                         name="Riot API unresponsive!", value=msg)
-                await interaction.response.send_message(embed=embed_msg)
+                await interaction.followup.send(embed=embed_msg)
 
             match_ids = self.get_match_ids(puuid, region_route, 1)
 
@@ -198,7 +199,7 @@ class TFT(commands.Cog):
             except IndexError:
                 msg = f"No recent matches found for {summoner}."
                 embed_msg.add_field(name="No recent matches found!", value=msg)
-                await interaction.response.send_message(embed=embed_msg)
+                await interaction.followup.send(embed=embed_msg)
 
             # Get the recent match data
             match_data, queue = self.get_tft_match_data(matchID, puuid, host)
@@ -206,7 +207,7 @@ class TFT(commands.Cog):
             # Print the recent match data
             embed_msg = self.get_recentmatch_embed(match_data, summoner, queue)
 
-            await interaction.response.send_message(embed=embed_msg)
+            await interaction.followup.send(embed=embed_msg)
 
     @discord.app_commands.command(name="table")
     @commands.check(checks.check_if_bot)
