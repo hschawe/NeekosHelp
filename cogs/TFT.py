@@ -382,7 +382,7 @@ class TFT(commands.Cog):
         # Format traits for response
         traits = helpers.get_player_traits_from_match(match_data)
         trait_messages = []
-        for _, trait in traits.items():
+        for trait in traits:
             if trait['tier_current'] > 0:
                 trait_messages.append(
                     str(trait['num_units']) + ' ' + trait['name'] + ', ')
@@ -394,7 +394,7 @@ class TFT(commands.Cog):
         # Format units for response
         units = helpers.get_player_units_from_match(match_data)
         unit_messages = []
-        for _, unit in units.items():
+        for unit in units:
             temp_msg = "*" + unit["name"] + "* - " + \
                 (unit["tier"] * ":star:") + " | " + \
                 decoder.cost.get(unit["cost"], "") + "\n"
